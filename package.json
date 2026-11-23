@@ -1,0 +1,9 @@
+{
+  "name": "clause-circuit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "genlayer-js": "^0.18.0"
+  }
+}
