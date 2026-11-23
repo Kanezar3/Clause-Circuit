@@ -3,11 +3,11 @@
 ## Section 1: Submission Description (Strictly < 1,000 Characters)
 
 ```text
-ClauseCircuit implements a Kleene 3-valued (K3) boolean predicate graph (AND/OR/NOT/K_OF_N) escrow with real native value transfers on GenLayer StudioNet. A sponsor locks payable wei and builds a closing-condition DAG verified acyclic by Kahn's topological sort. GenLayer validators judge commit-pinned leaf atoms into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and a strict compatibility table (retriable UNKNOWN <=5 attempts; immutable TRUE/FALSE). Deterministic K3 logic enforces fail-closed NOT(UNKNOWN)=UNKNOWN, OR fallbacks, and K_OF_N short-circuiting.
+ClauseCircuit implements a Kleene 3-valued (K3) boolean predicate graph (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. A sponsor locks payable wei and builds a closing-condition DAG verified acyclic by Kahn's topological sort. Validators judge commit-pinned leaf atoms into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and a strict compatibility table (retriable UNKNOWN <=5 attempts; immutable TRUE/FALSE). Deterministic K3 logic enforces fail-closed NOT(UNKNOWN)=UNKNOWN, OR fallbacks, and K_OF_N short-circuiting.
 
-Live at 0xCC0903589e9e3baEA151BAde30D87A592Bc00137 (30 finalized txs): cleared an M&A circuit despite 2 FALSE atoms via K_OF_N(2/3), OR fallback, and NOT(FALSE), paying 1000 wei native to beneficiary (EOA +1000). Blocked 8 abuses: unauthorized open, value mismatch, unpinned URL, cyclic DAG, atom replay, NOT(UNKNOWN) settle, replay settle, and zero-balance draw.
+Live at 0xCC0903589e9e3baEA151BAde30D87A592Bc00137 (30 finalized txs): cleared an M&A circuit despite 2 FALSE atoms via K_OF_N(2/3), OR fallback, and NOT(FALSE), paying 1000 wei native to beneficiary (EOA +1000). Blocked 8 abuses: unauthorized open, value mismatch, unpinned URL, cyclic DAG, atom replay, NOT(UNKNOWN) settle, replay settle, and zero draw.
 
-Caveat: audits commit-pinned filings; does not enforce off-chain share transfer.
+Caveat: audits pinned filings; not off-chain share transfer.
 ```
 
 ---
