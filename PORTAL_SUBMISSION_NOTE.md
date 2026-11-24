@@ -3,7 +3,7 @@
 ## Section 1: Submission Description (Strictly < 1,000 Characters)
 
 ```text
-ClauseCircuit is a bilateral Kleene 3-valued (K3) boolean predicate DAG (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. Sponsor locks payable GEN and proposes an acyclic DAG (Kahn's sort, zero orphan nodes); beneficiary accepts before activation. Parties freeze the legal graph up front while validators judge commit-pinned natural-language prose into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and strict fail-closed compatibility (retriable UNKNOWN <=5; immutable TRUE/FALSE).
+ClauseCircuit is a bilateral Kleene 3-valued (K3) predicate DAG (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. Sponsor locks payable GEN and proposes an acyclic DAG (Kahn's sort, 0 orphan nodes); beneficiary accepts before activation. Parties freeze the graph up front while validators judge commit-pinned prose into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and strict fail-closed compatibility (retriable UNKNOWN <=5; immutable TRUE/FALSE).
 
 Live at 0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec (34 finalized txs, 0 blank errors, 34/34 read-backs): cleared an M&A circuit via K_OF_N(2/3) despite CFIUS FALSE, live OR(UNKNOWN, TRUE) short-circuiting, and NOT(FALSE), paying 0.5 GEN native to beneficiary. Blocked 9 abuses: unauthorized open, value mismatch, unpinned URL, cycle, unilateral accept, atom replay, NOT(UNKNOWN) settle, replay settle, and zero draw.
 
