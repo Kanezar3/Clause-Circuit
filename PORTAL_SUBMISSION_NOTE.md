@@ -3,11 +3,11 @@
 ## Section 1: Submission Description (Strictly < 1,000 Characters)
 
 ```text
-ClauseCircuit implements a Kleene 3-valued (K3) boolean predicate graph (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. A sponsor locks payable wei and builds a closing-condition DAG verified acyclic by Kahn's topological sort. Validators judge commit-pinned leaf atoms into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and a strict compatibility table (retriable UNKNOWN <=5 attempts; immutable TRUE/FALSE). Deterministic K3 logic enforces fail-closed NOT(UNKNOWN)=UNKNOWN, OR fallbacks, and K_OF_N short-circuiting.
+ClauseCircuit is a bilateral Kleene 3-valued (K3) boolean predicate DAG (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. Sponsor locks payable GEN and proposes an acyclic DAG (Kahn's sort, zero orphan nodes); beneficiary accepts before activation. Parties freeze the legal graph up front while validators judge commit-pinned natural-language prose into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and strict fail-closed compatibility (retriable UNKNOWN <=5; immutable TRUE/FALSE).
 
-Live at 0xCC0903589e9e3baEA151BAde30D87A592Bc00137 (30 finalized txs): cleared an M&A circuit despite 2 FALSE atoms via K_OF_N(2/3), OR fallback, and NOT(FALSE), paying 1000 wei native to beneficiary (EOA +1000). Blocked 8 abuses: unauthorized open, value mismatch, unpinned URL, cyclic DAG, atom replay, NOT(UNKNOWN) settle, replay settle, and zero draw.
+Live at 0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec (34 finalized txs, 0 blank errors, 34/34 read-backs): cleared an M&A circuit via K_OF_N(2/3) despite CFIUS FALSE, live OR(UNKNOWN, TRUE) short-circuiting, and NOT(FALSE), paying 0.5 GEN native to beneficiary. Blocked 9 abuses: unauthorized open, value mismatch, unpinned URL, cycle, unilateral accept, atom replay, NOT(UNKNOWN) settle, replay settle, and zero draw.
 
-Caveat: audits pinned filings; not off-chain share transfer.
+Caveat: audits pinned prose filings; not off-chain share transfer.
 ```
 
 ---
@@ -15,20 +15,33 @@ Caveat: audits pinned filings; not off-chain share transfer.
 ## Section 2: Complete Evidence & Reference Links
 
 ### Core Contract & Repository Links
-- **StudioNet Explorer Contract**: https://explorer-studio.genlayer.com/address/0xCC0903589e9e3baEA151BAde30D87A592Bc00137
+- **StudioNet Explorer Contract**: https://explorer-studio.genlayer.com/address/0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec
 - **Public GitHub Repository**: https://github.com/Kanezar3/Clause-Circuit
-- **Commit-Pinned Contract (`7d72a5e`)**: https://github.com/Kanezar3/Clause-Circuit/blob/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/contracts/clause_circuit.py
-- **Release Manifest**: https://github.com/Kanezar3/Clause-Circuit/blob/main/release_manifest.json
-- **Runner Probe Contract**: https://explorer-studio.genlayer.com/address/0x079d803C3154B8BEA59818E09d1E9CE1270Daf4f
+- **Commit-Pinned Contract (`d56f7ec`)**: https://github.com/Kanezar3/Clause-Circuit/blob/d56f7eca43e073b7f0c84ab015052cf1bb034802/contracts/clause_circuit.py
+- **Commit-Pinned Release Manifest (`0989696`)**: https://github.com/Kanezar3/Clause-Circuit/blob/098969626fd1d471f3bc40e7e271fe2f4e1769d4/release_manifest.json
+- **Runner Probe Contract (`probe_ok`)**: https://explorer-studio.genlayer.com/address/0x66EEB6F0C8B4077a93C3b3892fb9a80b09ee7B13
 
-### Key Live Demo & Expected-Failure Transactions (All `FINALIZED`)
-- **DEPLOY**: https://explorer-studio.genlayer.com/tx/0xa2458956e5db1f2838996fffc86f51fe783fae1a163d39f27d1163753dcb7f16
-- **S1 (`open_circuit` 1000 wei payable)**: https://explorer-studio.genlayer.com/tx/0x350fd5c46b5668e53a36ea36117cdf6ccf8f2c10433e5758404c9984f9fb81b5
-- **X4 (`freeze_circuit` `CYCLE_DETECTED`)**: https://explorer-studio.genlayer.com/tx/0xcd5181bbc8957606b7baf7e910a7b0a5cf28ad66749d219821449bdc2d6928dd
-- **S12 (`freeze_circuit` 10-node DAG)**: https://explorer-studio.genlayer.com/tx/0xbb733d2851bc069dbd4baae1a22f5615f713d4944f3f4098e62be49d18601a6e
-- **S15 (`K_OF_N` 2/3 satisfied despite CFIUS `FALSE`)**: https://explorer-studio.genlayer.com/tx/0x7381617c86a445ef63d671fd1be5899c0ef62614cd8668e42ece6e0253f1f716
-- **S17 (`OR` fallback satisfied despite bank debt `FALSE`)**: https://explorer-studio.genlayer.com/tx/0x443ec3c73a6d482f1d9834089e0bdbefab4f4ed2ef326dd3c3f83cf2edb92a47
-- **X6 (`settle_circuit` `CIRCUIT_STILL_UNDETERMINED` — fail-closed `NOT(UNKNOWN)`)**: https://explorer-studio.genlayer.com/tx/0xe81f3ad17f741d3466bc8978da1956a1bf069ba0d7c4d61188b40cc6d9d42c32
-- **S18 (`atom_injunction` `FALSE` => `NOT(FALSE)=TRUE`)**: https://explorer-studio.genlayer.com/tx/0x30ef27996f8d176f7730dc0f8cc46d02b64f1146977705b708f23b08510c9e7a
-- **S19 (`settle_circuit` `RELEASED_TO_BENEFICIARY`)**: https://explorer-studio.genlayer.com/tx/0x58848995972d6240eec0f556f7a4ce84e0ff97bc53dd158dc9d017430dc1d42c
-- **S20 (`withdraw_payout` +1000 wei native EOA transfer)**: https://explorer-studio.genlayer.com/tx/0x55571966de626433bbbac0bb405cfe7be59e64fe20fb60d6f8a3c8fe9194f038
+### Key Positive Demo Transactions (All `FINALIZED` + `SUCCESS`)
+- **DEPLOY**: https://explorer-studio.genlayer.com/tx/0x1206ae01d7dbf80eb2531c399e900a9edace1c31fa702212c859d9767300df7a
+- **S1 (`open_circuit` 0.5 GEN payable)**: https://explorer-studio.genlayer.com/tx/0x28a8f946724aa7f34dab69f36ba6723dc0fb8250ee42d78ff66093052e90f6d8
+- **S12 (`propose_circuit` 10-node acyclic DAG, 0 orphans)**: https://explorer-studio.genlayer.com/tx/0xe265fbd3409522fc9eff04971f6562d4f50631833fbc0a4b590cf2c6e516d3d0
+- **S13 (`accept_circuit` beneficiary bilateral freeze)**: https://explorer-studio.genlayer.com/tx/0xbd61461eca6263ce98e852ad34161e6865ee29c3038847a9367ecfdd7854451c
+- **S14 (`atom_eu_antitrust` prose -> `TRUE`)**: https://explorer-studio.genlayer.com/tx/0x665716602f3fdd4e82cbc816689c8cd5e16e0b8cd7c6d89d4e055e1bba6ebdd1
+- **S15 (`atom_us_cfius` prose -> `FALSE`)**: https://explorer-studio.genlayer.com/tx/0x006af32a8005b06a4da5ad784ebe827f4cfb18e0bc45989b4dec13bd25dfb981
+- **S16 (`atom_uk_cma` prose -> `TRUE`, `K_OF_N` 2/3 satisfied)**: https://explorer-studio.genlayer.com/tx/0x8c1c000b17fa544c5520263dcd003dd8c55ba46140ab13e9a69ce460e8153d5c
+- **S17 (`atom_bridge_equity` prose -> `TRUE`, live `OR(UNKNOWN, TRUE)` short-circuit)**: https://explorer-studio.genlayer.com/tx/0x97f4dff996b72bce1e55612d4fcb493a947fb7733f936a1bb1fabb86f2b237d1
+- **S18 (`atom_injunction` prose -> `FALSE`, `NOT(FALSE)=TRUE`)**: https://explorer-studio.genlayer.com/tx/0x0c0b5cb4f2b60a3ee1e174ac560be7bb5da1667776e505390d3e85dbb9bdd565
+- **S19 (`settle_circuit` `RELEASED_TO_BENEFICIARY`)**: https://explorer-studio.genlayer.com/tx/0x44a17de2106cc89db5cf8771c9d17e296cf66052cf0f35d177cfa4528bcfdff2
+- **S20 (`withdraw_payout` 0.5 GEN real native EOA payout)**: https://explorer-studio.genlayer.com/tx/0x5edc46bc3ff6846a36a87470c132fcf1b2ac7de893260bd3a5d4add918224380
+
+### Expected-Failure Abuse Guards (All `FINALIZED` + `ERROR` with Exact Decoded Revert Codes)
+- **X1 (`UNAUTHORIZED_CALLER` on `open_circuit`)**: https://explorer-studio.genlayer.com/tx/0x89f8b52fa45a5e2c93b910c6efb0fdd425a2301214de2f5c7424b23a6f0f5156
+- **X2 (`ESCROW_VALUE_MISMATCH` on payable `open_circuit`)**: https://explorer-studio.genlayer.com/tx/0x0384aee0653730d06e14fcb8fc2c2d8c4a6a70364a6ecbaaf5e1be35b6e4d81e
+- **X3 (`INVALID_EVIDENCE_URL` on unpinned `/main/`)**: https://explorer-studio.genlayer.com/tx/0x37785d71dd7398331259908fc0f2ae488c6e7878645869e327a32bf34cf60c58
+- **X4 (`CYCLE_DETECTED` via Kahn's sort on `propose_circuit`)**: https://explorer-studio.genlayer.com/tx/0x2a2489522eb6d29f5df4119b8362a88a1f2a6cad8fe38ab94261883827bd17d3
+- **X5 (`UNAUTHORIZED_CALLER` on unilateral `accept_circuit`)**: https://explorer-studio.genlayer.com/tx/0x7fc75a13aafc825c4390ab7d4b7739f29244400c7a375532713e603b956f4515
+- **X6 (`ATOM_ALREADY_CONCLUDED` on atom replay)**: https://explorer-studio.genlayer.com/tx/0x3151b82fb52db2b44b349ee934741505f6f95b6e4514c1c4ae7a97998dcde6aa
+- **X7 (`CIRCUIT_STILL_UNDETERMINED` on fail-closed `NOT(UNKNOWN)`)**: https://explorer-studio.genlayer.com/tx/0x00712482e639c18c7a1b227a6ecb850a7e5b51a64e5bd92f2bf80bde73ec4820
+- **X8 (`CIRCUIT_ALREADY_SETTLED` on replay settlement)**: https://explorer-studio.genlayer.com/tx/0x216d647817b2f936090b4ec1337b3ea8ddded880d8231146132480b27bf0c140
+- **X9 (`NO_PENDING_PAYOUT` on zero-balance withdrawal)**: https://explorer-studio.genlayer.com/tx/0xcfb31c9e1acf16812ad3229b164227ff88a3e7814071727744ebd72c74a321b8
+- **S8_RETRY (`NODE_ALREADY_EXISTS` — labeled RPC 502 client retry)**: https://explorer-studio.genlayer.com/tx/0x72d24a578aa7a2f8dd6f119898cb214d9899df0fd546e5982da9af833496d26e
