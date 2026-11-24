@@ -1,21 +1,30 @@
 {
   "projectName": "ClauseCircuit",
   "humanName": "Clause Circuit",
-  "description": "Kleene 3-Valued Boolean Predicate Graph (AND/OR/NOT/K_OF_N) Closing-Condition Escrow with Real Native Transfers on GenLayer StudioNet",
+  "description": "Bilateral Kleene 3-Valued Boolean Predicate Graph (AND/OR/NOT/K_OF_N) Closing-Condition Escrow with Real Native Transfers on GenLayer StudioNet",
   "repositoryUrl": "https://github.com/Kanezar3/Clause-Circuit",
-  "deployCommitSha": "7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5",
+  "deployCommitSha": "d56f7eca43e073b7f0c84ab015052cf1bb034802",
   "contractPath": "contracts/clause_circuit.py",
-  "gitBlobHash": "2427bea408e22f70a16fd5003126c7f7d25f407c",
-  "localContractSha256": "4a338dbbf69f98356e71e590643c8456118f18b96dc0432c0096510ec2ab3c42",
-  "onChainCodeSha256": "4a338dbbf69f98356e71e590643c8456118f18b96dc0432c0096510ec2ab3c42",
+  "gitBlobHash": "a5ee58170d2ded12b8e00a5c056e14d221a47a1d",
+  "localContractSha256": "41ed3d55c23df196d7b802b58f1aa81bb998c25e492c16956393552d7be8a83c",
+  "onChainCodeSha256": "41ed3d55c23df196d7b802b58f1aa81bb998c25e492c16956393552d7be8a83c",
   "blobEqualityVerified": true,
+  "runner": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6",
+  "constructorArgs": [],
+  "toolchainVersions": {
+    "node": "v24.12.0",
+    "genlayerJs": "2.0.0",
+    "python": "Python 3.15.2",
+    "pytest": "pytest 9.2.0",
+    "genvmLinter": "0.11.0"
+  },
   "settlementMode": "OPTION_A_REAL_NATIVE_PAYABLE",
-  "probeContractAddress": "0x079d803C3154B8BEA59818E09d1E9CE1270Daf4f",
-  "probeDeployTxHash": "0xe5d1092c0a06add29c0d04900121164fb6e607abc12c76cb38693c3d46b88104",
-  "probeSetTxHash": "0x1cd303fb7506d9a7582fb17b14b1b1c4ef9134fb55a7227d162001b31b3b9cd4",
+  "probeContractAddress": "0x66EEB6F0C8B4077a93C3b3892fb9a80b09ee7B13",
+  "probeDeployTxHash": "0x8e9c3acb83bb1cb38341b4a0032136dc2d7b4d503402fb2a6349730df9950127",
+  "probeSetTxHash": "0xb5082c0dbe4dbca911a73420b256783c5c08ce2b20ba93812c5f8d6776484d88",
   "probeVerifiedValue": "probe_ok",
-  "mainContractAddress": "0xCC0903589e9e3baEA151BAde30D87A592Bc00137",
-  "mainDeployTxHash": "0xa2458956e5db1f2838996fffc86f51fe783fae1a163d39f27d1163753dcb7f16",
+  "mainContractAddress": "0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec",
+  "mainDeployTxHash": "0x1206ae01d7dbf80eb2531c399e900a9edace1c31fa702212c859d9767300df7a",
   "chain": {
     "chainId": 61999,
     "network": "GenLayer StudioNet",
@@ -23,59 +32,77 @@
     "explorerUrl": "https://explorer-studio.genlayer.com"
   },
   "accounts": {
-    "sponsor": "0xc0dafE2bd62f1d27BAE956E7AF6ad52F9b6391Fb",
-    "beneficiary": "0xc1EFe2d6A3b51f02260063dFc67715CD0ec93324",
-    "solver": "0x7F78d98Fae05b5aAa4c9cCA92f0642e3a00E5D39",
-    "attacker": "0x8F4c956efC5E06A9431513A56d8DBC2Fe30DB028"
+    "sponsor": "0xd578485aF48605b084F0f4a6c07BB0F8313Cd93f",
+    "beneficiary": "0x80f859750A8C7c4D533B7a1F6f21590cE5a0ac0b",
+    "solver": "0x2e872B46C838c8E440990aF2376d643717f82518",
+    "attacker": "0x55A26a2A62fA2bD43EB0d6152EF28C2BA2025884"
   },
   "funding": {
     "sponsor": {
-      "address": "0xc0dafE2bd62f1d27BAE956E7AF6ad52F9b6391Fb",
-      "simFundAccountTx": "0xfc43f4087296af95d31d2ba0bf43f50a0637ccf6c583f2276c1a296d796ffeed",
-      "fundedBalanceWei": "1000000"
+      "address": "0xd578485aF48605b084F0f4a6c07BB0F8313Cd93f",
+      "simFundAccountTxs": [
+        "0xe51128d2ddb23955a4dd591c2d5242f48bb6f607fb0f85d891cb977f16cc0da0"
+      ],
+      "fundedBalanceWei": "7999999999999999997"
+    },
+    "beneficiary": {
+      "address": "0x80f859750A8C7c4D533B7a1F6f21590cE5a0ac0b",
+      "simFundAccountTxs": [
+        "0x6b322f23825db2842eece1aa868e1cd193c9cdc6c760f94f60277e4b7d2c071e"
+      ],
+      "fundedBalanceWei": "4000000000000000000"
+    },
+    "solver": {
+      "address": "0x2e872B46C838c8E440990aF2376d643717f82518",
+      "simFundAccountTxs": [
+        "0xa0809f9a2e9774824a01f7ca3766c3167da4c6eddc5a0b35c7343139d39e4417"
+      ],
+      "fundedBalanceWei": "4000000000000000000"
     },
     "attacker": {
-      "address": "0x8F4c956efC5E06A9431513A56d8DBC2Fe30DB028",
-      "simFundAccountTx": "0x9a2c65597257897b6ab9e4183b3de1f92e19ed0a3e850efff35b9596e23383a9",
-      "fundedBalanceWei": "1000000"
+      "address": "0x55A26a2A62fA2bD43EB0d6152EF28C2BA2025884",
+      "simFundAccountTxs": [
+        "0xb142f2a3bad561a5825dcb457a5e9d7d903d4f110c063026d4476cf52f17c9d8"
+      ],
+      "fundedBalanceWei": "4000000000000000000"
     }
   },
   "evidenceFiles": [
     {
-      "file": "evidence/atom_eu_antitrust.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_eu_antitrust.json",
-      "sha256": "f177b5262e65f68d1238319ec8a4d686bab180af9c592c14db5b6ec2831be475",
-      "size": 482
+      "file": "evidence/atom_eu_antitrust.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_eu_antitrust.txt",
+      "sha256": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+      "size": 756
     },
     {
-      "file": "evidence/atom_us_cfius.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_us_cfius.json",
-      "sha256": "358c1e7bf18d6722673dc6adcdc9af2ae1a726bcb2a0a9cb55f29f753eec0ebc",
-      "size": 512
+      "file": "evidence/atom_us_cfius.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_us_cfius.txt",
+      "sha256": "8c31879b7f70ff415e021ec20efa6ac1a0473506eb3a3aa6ce12180eb6c82b09",
+      "size": 640
     },
     {
-      "file": "evidence/atom_uk_cma.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_uk_cma.json",
-      "sha256": "7b0b49f304307c2f1c7f9d2960060712b9de3368fc9207ed7d9f50c3fb95232f",
-      "size": 471
+      "file": "evidence/atom_uk_cma.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_uk_cma.txt",
+      "sha256": "664117145ca172bf6fa634c0f487ce6d5b91fbb79fbe4e4f9cc8ee6d68161bde",
+      "size": 575
     },
     {
-      "file": "evidence/atom_bank_debt.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_bank_debt.json",
-      "sha256": "a05e6834225846311c4b4b0b1cc082efbce47ea291b5510d45c30e1cdd289041",
-      "size": 428
+      "file": "evidence/atom_bank_debt.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_bank_debt.txt",
+      "sha256": "306caefa8b480dbabf16ed14b397bf5ee0892cc541c27070e951dbd72354f2eb",
+      "size": 619
     },
     {
-      "file": "evidence/atom_bridge_equity.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_bridge_equity.json",
-      "sha256": "2a987b570b8e17820131a41ec7d6652de0a6b6b888f08094ee3881a43ec11278",
-      "size": 442
+      "file": "evidence/atom_bridge_equity.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_bridge_equity.txt",
+      "sha256": "ab88bff27d9d6580a38165c4a570c67903e8df5b913f32d696a8e9f4eb7c96b8",
+      "size": 583
     },
     {
-      "file": "evidence/atom_injunction.json",
-      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_injunction.json",
-      "sha256": "e3ade2dc887fb661716dc4b1544d053dc5b0b35e13adf6c0a956285b2f60f3eb",
-      "size": 475
+      "file": "evidence/atom_injunction.txt",
+      "url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_injunction.txt",
+      "sha256": "8c773fc64e9e859f3133313d6541946d5bacdb51b4f79a7c63ffb62938751c52",
+      "size": 679
     }
   ],
   "transactions": [
@@ -84,67 +111,93 @@
       "scenario": "Unauthorized Non-Sponsor open_circuit Blocked",
       "method": "open_circuit",
       "caller": "attacker",
-      "hash": "0x9139ffd30cf6661d4c2d9ea0d3dba134498b20db84d1540ac75766752f0caa94",
+      "hash": "0x89f8b52fa45a5e2c93b910c6efb0fdd425a2301214de2f5c7424b23a6f0f5156",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "UNAUTHORIZED_CALLER",
       "votes": {
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "idle",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "idle",
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
       },
       "expected": "UNAUTHORIZED_CALLER",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 0,
+        "beneficiary": "",
+        "circuit_deadline": 0,
+        "circuit_status": "UNINITIALIZED",
+        "escrow_amount": 0,
+        "locked_escrow": 0,
+        "nodes_count": 0,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "X2",
       "scenario": "Payable Escrow Value Mismatch Blocked",
       "method": "open_circuit",
       "caller": "sponsor",
-      "hash": "0x7c9bbe9b8e4d35352416781183a88a1e3345d77a6493a1aab642726125739ec2",
+      "hash": "0x0384aee0653730d06e14fcb8fc2c2d8c4a6a70364a6ecbaaf5e1be35b6e4d81e",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "ESCROW_VALUE_MISMATCH",
       "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
-        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "idle",
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
         "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "idle"
+        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "idle",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree"
       },
       "expected": "ESCROW_VALUE_MISMATCH",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 0,
+        "beneficiary": "",
+        "circuit_deadline": 0,
+        "circuit_status": "UNINITIALIZED",
+        "escrow_amount": 0,
+        "locked_escrow": 0,
+        "nodes_count": 0,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S1",
-      "scenario": "Sponsor Opens Circuit with 1000 wei Payable Escrow",
+      "scenario": "Sponsor Opens Circuit with 0.5 GEN Payable Escrow",
       "method": "open_circuit",
       "caller": "sponsor",
-      "hash": "0x350fd5c46b5668e53a36ea36117cdf6ccf8f2c10433e5758404c9984f9fb81b5",
+      "hash": "0x28a8f946724aa7f34dab69f36ba6723dc0fb8250ee42d78ff66093052e90f6d8",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
-      "returnOrError": "CIRCUIT_OPENED:ESCROW_1000",
+      "returnOrError": "CIRCUIT_OPENED:ESCROW_500000000000000000",
       "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
-        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
-        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "idle",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "idle",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
       },
-      "expected": "CIRCUIT_OPENED:ESCROW_1000",
+      "expected": "CIRCUIT_OPENED:ESCROW_500000000000000000",
       "expectedFailure": false,
       "readBack": {
         "atoms_count": 0,
-        "beneficiary": "0xc1efe2d6a3b51f02260063dfc67715cd0ec93324",
-        "circuit_deadline": 1795434152,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
         "circuit_status": "DRAFT",
-        "escrow_amount": 1000,
-        "locked_escrow": 1000,
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
         "nodes_count": 0,
         "root_node_id": "",
-        "sponsor": "0xc0dafe2bd62f1d27bae956e7af6ad52f9b6391fb",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
         "total_pending_payouts": 0,
         "total_withdrawn": 0
       }
@@ -154,282 +207,617 @@
       "scenario": "Unpinned Mutable /main/ URL Blocked",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0xc592f0431292af925d33e5595e066d8cdae97a09d695b7c882fd783882b9e9dc",
+      "hash": "0x37785d71dd7398331259908fc0f2ae488c6e7878645869e327a32bf34cf60c58",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "INVALID_EVIDENCE_URL",
       "votes": {
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "idle",
-        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree"
       },
       "expected": "INVALID_EVIDENCE_URL",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 0,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 0,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S2",
       "scenario": "Sponsor Adds Atom atom_eu_antitrust",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0xb5e3649c2755cb28aae78b68802cd018c31224b893ff580fefc93db184f5bca7",
+      "hash": "0xc195a07f80a06f991a280d7ecdf3a965f18caf21fb8d8570cc521b343d12d563",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_eu_antitrust",
       "votes": {
-        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
-        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
-        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "idle",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "idle",
+        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
         "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
       },
       "expected": "ATOM_ADDED:atom_eu_antitrust",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "The European Commission unconditionally granted Phase I merger clearance for the acquisition.",
+        "content_hash": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+        "created_at": 1795509338,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_eu_antitrust.txt",
+        "kind": "ATOM",
+        "node_id": "atom_eu_antitrust",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S3",
       "scenario": "Sponsor Adds Atom atom_us_cfius",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0xe0d90297450c8353f02719d84f974054d093209ac7cf869339219f8decd28aae",
+      "hash": "0x1fc293df74738a40d48358df46b0f6f3358ffd46bbb7a893a98cc325a5fde7a5",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_us_cfius",
       "votes": {
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
+        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "idle",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "ATOM_ADDED:atom_us_cfius",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "CFIUS unconditionally cleared the acquisition with no unresolved mitigation conditions.",
+        "content_hash": "8c31879b7f70ff415e021ec20efa6ac1a0473506eb3a3aa6ce12180eb6c82b09",
+        "created_at": 1795509387,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_us_cfius.txt",
+        "kind": "ATOM",
+        "node_id": "atom_us_cfius",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S4",
       "scenario": "Sponsor Adds Atom atom_uk_cma",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0xe30bde18b40fe0f6735e68d19fd6ee1e7c6f7382d4b1c6013ec4045e3785f558",
+      "hash": "0x56bee53a4fcd30af262c621a7f653bfab2e6604f2dd8e5d15539028634d09848",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_uk_cma",
       "votes": {
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "idle",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "idle",
         "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "idle"
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree"
       },
       "expected": "ATOM_ADDED:atom_uk_cma",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "The UK CMA unconditionally cleared the proposed acquisition without Phase 2 referral.",
+        "content_hash": "664117145ca172bf6fa634c0f487ce6d5b91fbb79fbe4e4f9cc8ee6d68161bde",
+        "created_at": 1795509442,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_uk_cma.txt",
+        "kind": "ATOM",
+        "node_id": "atom_uk_cma",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S5",
       "scenario": "Sponsor Adds Atom atom_bank_debt",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0x8f51b09dfc3bc5617c66a97a33f2fe0a5f4a9332bd08f5deca64dbfba859bbab",
+      "hash": "0x8d44bc96403d29fd7eeac8334e4fce8758ba0de5eb48a32de1edd50327c84fe4",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_bank_debt",
       "votes": {
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
+        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
         "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "idle"
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
       },
       "expected": "ATOM_ADDED:atom_bank_debt",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "The senior syndicated bank debt commitment letter remains active and available to fund closing.",
+        "content_hash": "306caefa8b480dbabf16ed14b397bf5ee0892cc541c27070e951dbd72354f2eb",
+        "created_at": 1795509513,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_bank_debt.txt",
+        "kind": "ATOM",
+        "node_id": "atom_bank_debt",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S6",
       "scenario": "Sponsor Adds Atom atom_bridge_equity",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0x5b30375d9d72ce1234368f3ec862d98aebd7d22022638464a0eb973d9e54d5dc",
+      "hash": "0x83ff6404f34c9a5a674310e309418ae04274d2d2f10f9f8bd53d2dc9aa50df2e",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_bridge_equity",
       "votes": {
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
-        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "idle",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "idle"
       },
       "expected": "ATOM_ADDED:atom_bridge_equity",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "The sovereign bridge equity facility is executed and unconditionally committed to fund closing.",
+        "content_hash": "ab88bff27d9d6580a38165c4a570c67903e8df5b913f32d696a8e9f4eb7c96b8",
+        "created_at": 1795509584,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_bridge_equity.txt",
+        "kind": "ATOM",
+        "node_id": "atom_bridge_equity",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S7",
       "scenario": "Sponsor Adds Atom atom_injunction",
       "method": "add_atom",
       "caller": "sponsor",
-      "hash": "0x25006c2a1d98c98de04771799199b30ddec97489574c739ccf2e2cf8907b9ff7",
+      "hash": "0xbc4c5a325dec41ee67adff946c1363a013901a237643609379ed2c8b43a09eed",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_ADDED:atom_injunction",
       "votes": {
         "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
         "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "idle",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "ATOM_ADDED:atom_injunction",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 0,
+        "claim_text": "An active court injunction currently bars closing of the acquisition.",
+        "content_hash": "8c773fc64e9e859f3133313d6541946d5bacdb51b4f79a7c63ffb62938751c52",
+        "created_at": 1795509849,
+        "evaluated_at": 0,
+        "evidence_digest": "",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_injunction.txt",
+        "kind": "ATOM",
+        "node_id": "atom_injunction",
+        "reason": "",
+        "verdict": "UNKNOWN"
+      }
     },
     {
       "step": "S8",
       "scenario": "Sponsor Adds K_OF_N (2 of 3) Regulatory Quorum Gate",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0x6dcd7e978e2b027603d4430fa4420e51c414392abd54bbbcacc62899e17ee4e8",
+      "hash": "0x2c39ae78e699dd08ebae743946e41d59e63181ef558c7fcc2ed37c3ea864a419",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:gate_reg_quorum:K_OF_N",
       "votes": {
         "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
         "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
         "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "idle",
-        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
       },
       "expected": "GATE_ADDED:gate_reg_quorum:K_OF_N",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "child_ids": [
+          "atom_eu_antitrust",
+          "atom_us_cfius",
+          "atom_uk_cma"
+        ],
+        "created_at": 1795510120,
+        "k": 2,
+        "kind": "GATE",
+        "node_id": "gate_reg_quorum",
+        "op": "K_OF_N"
+      }
+    },
+    {
+      "step": "S8_RETRY",
+      "scenario": "Client Retry After StudioNet HTTP 502 Proxy Response (Duplicate add_gate Safely Blocked)",
+      "method": "add_gate",
+      "caller": "sponsor",
+      "hash": "0x72d24a578aa7a2f8dd6f119898cb214d9899df0fd546e5982da9af833496d26e",
+      "status": "FINALIZED",
+      "executionResult": "ERROR",
+      "returnOrError": "NODE_ALREADY_EXISTS",
+      "votes": {
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
+        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+      },
+      "expected": "NODE_ALREADY_EXISTS",
+      "expectedFailure": true,
+      "operatorNote": "Transient StudioNet HTTP 502 hid the S8 tx hash on attempt 1; automated retry on attempt 2 confirmed duplicate node guard NODE_ALREADY_EXISTS.",
+      "readBack": {
+        "child_ids": [
+          "atom_eu_antitrust",
+          "atom_us_cfius",
+          "atom_uk_cma"
+        ],
+        "created_at": 1795510120,
+        "k": 2,
+        "kind": "GATE",
+        "node_id": "gate_reg_quorum",
+        "op": "K_OF_N"
+      }
     },
     {
       "step": "S9",
       "scenario": "Sponsor Adds OR Financing Fallback Gate",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0xc34cf04677da880b82db1a1243028a837e094ac77e52c3574c1ac01360230f89",
+      "hash": "0xb981e0272eea15e266b41fa4bc7ce1d138aabf0debb5a8b007a06da10cc9adaf",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:gate_financing:OR",
       "votes": {
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
         "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
         "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree"
       },
       "expected": "GATE_ADDED:gate_financing:OR",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "child_ids": [
+          "atom_bank_debt",
+          "atom_bridge_equity"
+        ],
+        "created_at": 1795510305,
+        "k": 0,
+        "kind": "GATE",
+        "node_id": "gate_financing",
+        "op": "OR"
+      }
     },
     {
       "step": "S10",
       "scenario": "Sponsor Adds NOT Active-Injunction Gate",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0x67d8a60b6d02d2b3acd9770a5b6f09da8bcd2b12a7b4f26f02984b039fbb1481",
+      "hash": "0xb0364013ae3a04b6886dd956539dc36cb3fd74b050241a1501f30c3f8aa83986",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:gate_no_injunction:NOT",
       "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
         "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "idle",
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "idle"
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
       },
       "expected": "GATE_ADDED:gate_no_injunction:NOT",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "child_ids": [
+          "atom_injunction"
+        ],
+        "created_at": 1795510371,
+        "k": 0,
+        "kind": "GATE",
+        "node_id": "gate_no_injunction",
+        "op": "NOT"
+      }
     },
     {
       "step": "S11",
       "scenario": "Sponsor Adds Root AND Closing Gate",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0xe7ecee1c9645639be54cd990701d43ccd9f29a7ce88d4b5501b661cda22e2d48",
+      "hash": "0xee8b67a9551a1db6bde49eeb9cd9a1a6bd8ff0c185582dd34f9d92cf863b5d81",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:root:AND",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree"
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "idle",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "idle",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree"
       },
       "expected": "GATE_ADDED:root:AND",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "child_ids": [
+          "gate_reg_quorum",
+          "gate_financing",
+          "gate_no_injunction"
+        ],
+        "created_at": 1795510447,
+        "k": 0,
+        "kind": "GATE",
+        "node_id": "root",
+        "op": "AND"
+      }
     },
     {
       "step": "S11B",
-      "scenario": "Sponsor Adds Auxiliary Cyclic Gate g_cyc1 (For Cycle Guard Proof)",
+      "scenario": "Sponsor Adds Temporary Cyclic Gate g_cyc1 (Cycle Guard Test)",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0x93337b5e6eb95fc9274909f7cf0b90d5d94d31e6e1f9658ca903873a4404e24d",
+      "hash": "0x3e34c07d6651a598a3d57f9ec40f8ca40d00ca09d3a38139e75bbb3b031e3469",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:g_cyc1:OR",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "idle",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "idle",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "GATE_ADDED:g_cyc1:OR",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 11,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S11C",
-      "scenario": "Sponsor Adds Auxiliary Cyclic Gate g_cyc2 (Closes Cycle)",
+      "scenario": "Sponsor Adds Temporary Cyclic Gate g_cyc2 (Closes Cycle)",
       "method": "add_gate",
       "caller": "sponsor",
-      "hash": "0x49a3349160fcfb9c4008b8e87a582abae3814220e2f225f71ab29ec160a53ddd",
+      "hash": "0x8a7dc91539160d0d566b348e4e6ffe2a68e70231125e29f70f516bb9ef03c61d",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "GATE_ADDED:g_cyc2:NOT",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "idle",
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
-        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree"
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle"
       },
       "expected": "GATE_ADDED:g_cyc2:NOT",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 12,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "X4",
       "scenario": "Kahn Topological Sort Rejects Cyclic Circuit Root",
-      "method": "freeze_circuit",
+      "method": "propose_circuit",
       "caller": "sponsor",
-      "hash": "0xcd5181bbc8957606b7baf7e910a7b0a5cf28ad66749d219821449bdc2d6928dd",
+      "hash": "0x2a2489522eb6d29f5df4119b8362a88a1f2a6cad8fe38ab94261883827bd17d3",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "CYCLE_DETECTED",
       "votes": {
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
         "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
-        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
-        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "idle"
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
       },
       "expected": "CYCLE_DETECTED",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 12,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
+    },
+    {
+      "step": "S11D",
+      "scenario": "Sponsor Removes Temporary Cyclic Gate g_cyc2 from Draft",
+      "method": "remove_draft_node",
+      "caller": "sponsor",
+      "hash": "0x7394318ac4f441a3306d89303761ba2aaee139fb664b220087dfcfa083db470b",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnOrError": "NODE_REMOVED:g_cyc2",
+      "votes": {
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
+      },
+      "expected": "NODE_REMOVED:g_cyc2",
+      "expectedFailure": false,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 11,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
+    },
+    {
+      "step": "S11E",
+      "scenario": "Sponsor Removes Temporary Cyclic Gate g_cyc1 from Draft",
+      "method": "remove_draft_node",
+      "caller": "sponsor",
+      "hash": "0x9e721478ecb087257729338cbce8145df95aaa6552e95fc940b28c9c6ac7df01",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnOrError": "NODE_REMOVED:g_cyc1",
+      "votes": {
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+      },
+      "expected": "NODE_REMOVED:g_cyc1",
+      "expectedFailure": false,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "DRAFT",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 10,
+        "root_node_id": "",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S12",
-      "scenario": "Sponsor Freezes Acyclic 10-Node M&A Circuit",
-      "method": "freeze_circuit",
+      "scenario": "Sponsor Proposes Clean Acyclic 10-Node M&A Circuit (DRAFT -> PROPOSED)",
+      "method": "propose_circuit",
       "caller": "sponsor",
-      "hash": "0xbb733d2851bc069dbd4baae1a22f5615f713d4944f3f4098e62be49d18601a6e",
+      "hash": "0xe265fbd3409522fc9eff04971f6562d4f50631833fbc0a4b590cf2c6e516d3d0",
+      "status": "FINALIZED",
+      "executionResult": "SUCCESS",
+      "returnOrError": "CIRCUIT_PROPOSED:root:NODES_10",
+      "votes": {
+        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
+        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
+        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree"
+      },
+      "expected": "CIRCUIT_PROPOSED:root:NODES_10",
+      "expectedFailure": false,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "PROPOSED",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 10,
+        "root_node_id": "root",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
+    },
+    {
+      "step": "X5",
+      "scenario": "Unilateral Non-Beneficiary accept_circuit Blocked (Bilateral Consent Guard)",
+      "method": "accept_circuit",
+      "caller": "sponsor",
+      "hash": "0x7fc75a13aafc825c4390ab7d4b7739f29244400c7a375532713e603b956f4515",
+      "status": "FINALIZED",
+      "executionResult": "ERROR",
+      "returnOrError": "UNAUTHORIZED_CALLER",
+      "votes": {
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "idle",
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree"
+      },
+      "expected": "UNAUTHORIZED_CALLER",
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "PROPOSED",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 10,
+        "root_node_id": "root",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
+    },
+    {
+      "step": "S13",
+      "scenario": "Beneficiary Accepts Proposed Circuit (PROPOSED -> FROZEN)",
+      "method": "accept_circuit",
+      "caller": "beneficiary",
+      "hash": "0xbd61461eca6263ce98e852ad34161e6865ee29c3038847a9367ecfdd7854451c",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "CIRCUIT_FROZEN:root:NODES_10",
       "votes": {
-        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
-        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree",
-        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
+        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
+        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "agree"
       },
       "expected": "CIRCUIT_FROZEN:root:NODES_10",
       "expectedFailure": false,
@@ -463,31 +851,31 @@
       }
     },
     {
-      "step": "S13",
-      "scenario": "Consensus Adjudicates EU Antitrust Clearance -> TRUE",
+      "step": "S14",
+      "scenario": "Consensus Adjudicates EU Antitrust Prose Notice -> TRUE",
       "method": "evaluate_atom",
       "caller": "solver",
-      "hash": "0x0e89ca16303343a5e5ee3d3ebd58eff41398b68c4359eb2f49483359f042f076",
+      "hash": "0x665716602f3fdd4e82cbc816689c8cd5e16e0b8cd7c6d89d4e055e1bba6ebdd1",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED",
       "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "idle",
-        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
-        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "idle"
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "idle",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED",
       "expectedFailure": false,
       "readBack": {
         "attempts": 1,
         "claim_text": "The European Commission unconditionally granted Phase I merger clearance for the acquisition.",
-        "content_hash": "f177b5262e65f68d1238319ec8a4d686bab180af9c592c14db5b6ec2831be475",
-        "created_at": 1795430629,
-        "evaluated_at": 1795431203,
-        "evidence_digest": "f177b5262e65f68d1238319ec8a4d686bab180af9c592c14db5b6ec2831be475",
-        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/evidence/atom_eu_antitrust.json",
+        "content_hash": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+        "created_at": 1795509338,
+        "evaluated_at": 1795510951,
+        "evidence_digest": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_eu_antitrust.txt",
         "kind": "ATOM",
         "node_id": "atom_eu_antitrust",
         "reason": "CLAIM_VERIFIED",
@@ -495,96 +883,131 @@
       }
     },
     {
-      "step": "X5",
+      "step": "X6",
       "scenario": "Re-Evaluation of Concluded TRUE Atom Blocked (Immutability)",
       "method": "evaluate_atom",
       "caller": "attacker",
-      "hash": "0x2bb10c498384633d42c8aaab1a68215218124f4ab912ad3a6b06b89e9b509685",
+      "hash": "0x3151b82fb52db2b44b349ee934741505f6f95b6e4514c1c4ae7a97998dcde6aa",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "ATOM_ALREADY_CONCLUDED",
       "votes": {
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
         "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
+        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "idle",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
         "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
         "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "ATOM_ALREADY_CONCLUDED",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "attempts": 1,
+        "claim_text": "The European Commission unconditionally granted Phase I merger clearance for the acquisition.",
+        "content_hash": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+        "created_at": 1795509338,
+        "evaluated_at": 1795510951,
+        "evidence_digest": "5ff7f3d78145fc5b294fc049fc88b4933a717643908e5d45fe60c9eb37c145cb",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_eu_antitrust.txt",
+        "kind": "ATOM",
+        "node_id": "atom_eu_antitrust",
+        "reason": "CLAIM_VERIFIED",
+        "verdict": "TRUE"
+      }
     },
     {
-      "step": "S14",
-      "scenario": "Consensus Adjudicates US CFIUS Mitigation Unresolved -> FALSE",
+      "step": "S15",
+      "scenario": "Consensus Adjudicates US CFIUS Extended Review Notice -> FALSE",
       "method": "evaluate_atom",
       "caller": "solver",
-      "hash": "0x9d217ed50136191db4b75b2820f01df1f13854f12589a98b68ff4c7f30c42f4e",
+      "hash": "0x006af32a8005b06a4da5ad784ebe827f4cfb18e0bc45989b4dec13bd25dfb981",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
-        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
-        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "agree",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "idle",
-        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "idle",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "idle",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
       "expected": "ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "attempts": 1,
+        "claim_text": "CFIUS unconditionally cleared the acquisition with no unresolved mitigation conditions.",
+        "content_hash": "8c31879b7f70ff415e021ec20efa6ac1a0473506eb3a3aa6ce12180eb6c82b09",
+        "created_at": 1795509387,
+        "evaluated_at": 1795511072,
+        "evidence_digest": "8c31879b7f70ff415e021ec20efa6ac1a0473506eb3a3aa6ce12180eb6c82b09",
+        "evidence_url": "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/d56f7eca43e073b7f0c84ab015052cf1bb034802/evidence/atom_us_cfius.txt",
+        "kind": "ATOM",
+        "node_id": "atom_us_cfius",
+        "reason": "CLAIM_CONTRADICTED",
+        "verdict": "FALSE"
+      }
     },
     {
-      "step": "S15",
-      "scenario": "Consensus Adjudicates UK CMA Clearance -> TRUE (K_OF_N 2/3 Satisfied)",
+      "step": "S16",
+      "scenario": "Consensus Adjudicates UK CMA Phase 1 Notice -> TRUE (K_OF_N 2/3 Satisfied)",
       "method": "evaluate_atom",
       "caller": "solver",
-      "hash": "0x7381617c86a445ef63d671fd1be5899c0ef62614cd8668e42ece6e0253f1f716",
+      "hash": "0x8c1c000b17fa544c5520263dcd003dd8c55ba46140ab13e9a69ce460e8153d5c",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED",
       "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "idle",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
-        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
-        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
+        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
+        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "idle",
+        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
+        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree"
       },
       "expected": "ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED",
-      "expectedFailure": false
-    },
-    {
-      "step": "S16",
-      "scenario": "Consensus Adjudicates Bank Debt Lapsed -> FALSE",
-      "method": "evaluate_atom",
-      "caller": "solver",
-      "hash": "0xb6ce5a78eb649625589ad2910a4f52c13e0d59656b51ce241cd6d85b0ce240db",
-      "status": "FINALIZED",
-      "executionResult": "SUCCESS",
-      "returnOrError": "ATOM_CONCLUDED:atom_bank_debt:FALSE:CLAIM_CONTRADICTED",
-      "votes": {
-        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "idle",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "idle",
-        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
-      },
-      "expected": "ATOM_CONCLUDED:atom_bank_debt:FALSE:CLAIM_CONTRADICTED",
-      "expectedFailure": false
+      "expectedFailure": false,
+      "readBack": {
+        "eval_order": [
+          "atom_bank_debt",
+          "atom_bridge_equity",
+          "atom_eu_antitrust",
+          "atom_injunction",
+          "atom_uk_cma",
+          "atom_us_cfius",
+          "gate_financing",
+          "gate_no_injunction",
+          "gate_reg_quorum",
+          "root"
+        ],
+        "node_values": {
+          "atom_bank_debt": "UNKNOWN",
+          "atom_bridge_equity": "UNKNOWN",
+          "atom_eu_antitrust": "TRUE",
+          "atom_injunction": "UNKNOWN",
+          "atom_uk_cma": "TRUE",
+          "atom_us_cfius": "FALSE",
+          "gate_financing": "UNKNOWN",
+          "gate_no_injunction": "UNKNOWN",
+          "gate_reg_quorum": "TRUE",
+          "root": "UNKNOWN"
+        },
+        "root_node_id": "root",
+        "root_value": "UNKNOWN"
+      }
     },
     {
       "step": "S17",
-      "scenario": "Consensus Adjudicates Bridge Equity Executed -> TRUE (OR Fallback Satisfied)",
+      "scenario": "Consensus Adjudicates Bridge Equity Notice -> TRUE (Live OR(UNKNOWN, TRUE) Short-Circuit)",
       "method": "evaluate_atom",
       "caller": "solver",
-      "hash": "0x443ec3c73a6d482f1d9834089e0bdbefab4f4ed2ef326dd3c3f83cf2edb92a47",
+      "hash": "0x97f4dff996b72bce1e55612d4fcb493a947fb7733f936a1bb1fabb86f2b237d1",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED",
       "votes": {
-        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
-        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "idle",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "idle",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "idle",
+        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "agree",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "idle"
       },
       "expected": "ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED",
       "expectedFailure": false,
@@ -602,7 +1025,7 @@
           "root"
         ],
         "node_values": {
-          "atom_bank_debt": "FALSE",
+          "atom_bank_debt": "UNKNOWN",
           "atom_bridge_equity": "TRUE",
           "atom_eu_antitrust": "TRUE",
           "atom_injunction": "UNKNOWN",
@@ -618,39 +1041,52 @@
       }
     },
     {
-      "step": "X6",
+      "step": "X7",
       "scenario": "Fail-Closed NOT(UNKNOWN) Blocks Premature Settlement",
       "method": "settle_circuit",
       "caller": "solver",
-      "hash": "0xe81f3ad17f741d3466bc8978da1956a1bf069ba0d7c4d61188b40cc6d9d42c32",
+      "hash": "0x00712482e639c18c7a1b227a6ecb850a7e5b51a64e5bd92f2bf80bde73ec4820",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "CIRCUIT_STILL_UNDETERMINED",
       "votes": {
-        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "idle",
-        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree"
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "idle",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree",
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree",
+        "0xe358f855C96d8E7243836cf986eb037175B9467e": "idle"
       },
       "expected": "CIRCUIT_STILL_UNDETERMINED",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "atoms_count": 6,
+        "beneficiary": "0x80f859750a8c7c4d533b7a1f6f21590ce5a0ac0b",
+        "circuit_deadline": 1795512849,
+        "circuit_status": "FROZEN",
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 500000000000000000,
+        "nodes_count": 10,
+        "root_node_id": "root",
+        "sponsor": "0xd578485af48605b084f0f4a6c07bb0f8313cd93f",
+        "total_pending_payouts": 0,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S18",
-      "scenario": "Consensus Adjudicates Court Injunction Dismissed -> FALSE (NOT(FALSE)=TRUE)",
+      "scenario": "Consensus Adjudicates Delaware Court Order -> FALSE (NOT(FALSE)=TRUE, root=TRUE)",
       "method": "evaluate_atom",
       "caller": "solver",
-      "hash": "0x30ef27996f8d176f7730dc0f8cc46d02b64f1146977705b708f23b08510c9e7a",
+      "hash": "0x0c0b5cb4f2b60a3ee1e174ac560be7bb5da1667776e505390d3e85dbb9bdd565",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
       "returnOrError": "ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "idle",
+        "0x23A15A452F19D1B616276fedC5B8B51d69082959": "idle",
         "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "agree",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "idle"
+        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
+        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
       },
       "expected": "ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED",
       "expectedFailure": false,
@@ -668,7 +1104,7 @@
           "root"
         ],
         "node_values": {
-          "atom_bank_debt": "FALSE",
+          "atom_bank_debt": "UNKNOWN",
           "atom_bridge_equity": "TRUE",
           "atom_eu_antitrust": "TRUE",
           "atom_injunction": "FALSE",
@@ -685,97 +1121,116 @@
     },
     {
       "step": "S19",
-      "scenario": "Permissionless Kleene K3 Settlement Releases 1000 wei to Beneficiary",
+      "scenario": "Permissionless Kleene K3 Settlement Releases 0.5 GEN to Beneficiary",
       "method": "settle_circuit",
       "caller": "solver",
-      "hash": "0x58848995972d6240eec0f556f7a4ce84e0ff97bc53dd158dc9d017430dc1d42c",
+      "hash": "0x44a17de2106cc89db5cf8771c9d17e296cf66052cf0f35d177cfa4528bcfdff2",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
-      "returnOrError": "SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000",
+      "returnOrError": "SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_500000000000000000",
       "votes": {
+        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "agree",
+        "0x22Eda431B7fBC1216baE3b077a78c973a8719c58": "agree",
         "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "agree",
-        "0x5e880d85a70De78dDEf86236d57c42e73F560615": "idle",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree",
-        "0xee46B9Dc4c860149B1d140840284e5374854e746": "idle"
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0xE74a9088aD4d6dBf3C8cABcC0B91072d2a8c8afa": "agree"
       },
-      "expected": "SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000",
+      "expected": "SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_500000000000000000",
       "expectedFailure": false,
       "readBack": {
         "conservation_ok": true,
-        "escrow_amount": 1000,
+        "escrow_amount": 500000000000000000,
         "locked_escrow": 0,
-        "total_pending_payouts": 1000,
+        "total_pending_payouts": 500000000000000000,
         "total_withdrawn": 0
       }
     },
     {
-      "step": "X7",
+      "step": "X8",
       "scenario": "Replay settle_circuit Blocked After Terminal Settlement",
       "method": "settle_circuit",
       "caller": "attacker",
-      "hash": "0xcfd97685b07cb75a6ecb759cab5421a4f837b2257bdc77a338d6f67a189a850e",
+      "hash": "0x216d647817b2f936090b4ec1337b3ea8ddded880d8231146132480b27bf0c140",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "CIRCUIT_ALREADY_SETTLED",
       "votes": {
-        "0x1B490819e040562a5fb40CD64B1c70D4419c38d1": "idle",
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x19a02f95418A6c76091CDA37C4fc542CA82805c9": "agree",
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
+        "0x62718FbDf0509A398aA525C152D60c1F7A9d33D3": "idle",
         "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "agree",
-        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "idle"
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
       },
       "expected": "CIRCUIT_ALREADY_SETTLED",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "conservation_ok": true,
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 0,
+        "total_pending_payouts": 500000000000000000,
+        "total_withdrawn": 0
+      }
     },
     {
-      "step": "X8",
+      "step": "X9",
       "scenario": "Unauthorized Zero-Balance Withdrawal Blocked",
       "method": "withdraw_payout",
       "caller": "attacker",
-      "hash": "0x701f798274669d2b827437588a14f6c1a8bf3e8698360d4aa3d8ed7f9a900138",
+      "hash": "0xcfb31c9e1acf16812ad3229b164227ff88a3e7814071727744ebd72c74a321b8",
       "status": "FINALIZED",
       "executionResult": "ERROR",
-      "returnOrError": "",
+      "returnOrError": "NO_PENDING_PAYOUT",
       "votes": {
         "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "agree",
+        "0x240d2d7c8DF220110c26cfFFC532479319Cca0dC": "idle",
         "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
-        "0x5744305308D62592B7De585e1999c4Ea51E03C29": "agree",
-        "0x6fe9DE3d0adc76D6416A13CD8107aaE49A3CF98F": "idle",
-        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "agree"
+        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
+        "0x813890bC5bEDEB4F5437570962379F04738F18Cb": "agree"
       },
       "expected": "NO_PENDING_PAYOUT",
-      "expectedFailure": true
+      "expectedFailure": true,
+      "readBack": {
+        "conservation_ok": true,
+        "escrow_amount": 500000000000000000,
+        "locked_escrow": 0,
+        "total_pending_payouts": 500000000000000000,
+        "total_withdrawn": 0
+      }
     },
     {
       "step": "S20",
-      "scenario": "Beneficiary Withdraws 1000 wei Real Native Payout via _EoaRecipient.emit_transfer",
+      "scenario": "Beneficiary Withdraws 0.5 GEN Real Native Payout via _EoaRecipient.emit_transfer",
       "method": "withdraw_payout",
       "caller": "beneficiary",
-      "hash": "0x55571966de626433bbbac0bb405cfe7be59e64fe20fb60d6f8a3c8fe9194f038",
+      "hash": "0x5edc46bc3ff6846a36a87470c132fcf1b2ac7de893260bd3a5d4add918224380",
       "status": "FINALIZED",
       "executionResult": "SUCCESS",
-      "returnOrError": "1000",
+      "returnOrError": "500000000000000000",
       "votes": {
-        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "idle",
-        "0x534af64FFB6796Bc69aBf4C26c50788F1fFAfe56": "agree",
-        "0x6DC61b906F74F44612c5545b0b79486133B3556d": "agree",
-        "0x725Ab89db6A9DD886Ba71Bc5E63a01070C325bE3": "idle",
+        "0x21e4F7ba6Ec0fbf70C019fbc0F9A797c3ed1F969": "idle",
+        "0x4eeaD269a60bB89c98a23c1BCd0bd101CafD90E0": "agree",
+        "0x88E148Da14d45c5a5DD2DB25E776eBCBCe0Df539": "agree",
+        "0xBE58b43DF1d991e054F743Cc5571dD7029F3B888": "idle",
         "0xee46B9Dc4c860149B1d140840284e5374854e746": "agree"
       },
-      "expected": "1000",
+      "expected": "500000000000000000",
       "expectedFailure": false,
       "readBack": {
-        "beneficiary_eoa_balance_before_wei": "0",
-        "beneficiary_eoa_balance_after_wei": "1000",
-        "beneficiary_eoa_delta_wei": "1000",
+        "contract_balance_before_wei": "500000000000000000",
+        "contract_balance_after_wei": "0",
+        "contract_balance_delta_wei": "-500000000000000000",
+        "beneficiary_eoa_balance_before_wei": "4000000000000000000",
+        "beneficiary_eoa_balance_after_wei": "4499873695999999177",
+        "beneficiary_eoa_net_delta_wei": "499873695999999177",
         "accounting": {
           "conservation_ok": true,
-          "escrow_amount": 1000,
+          "escrow_amount": 500000000000000000,
           "locked_escrow": 0,
           "total_pending_payouts": 0,
-          "total_withdrawn": 1000
-        }
+          "total_withdrawn": 500000000000000000
+        },
+        "gross_native_payout_wei": "500000000000000000",
+        "studionet_v2_tx_fee_wei": "126304000000823"
       }
     }
   ]

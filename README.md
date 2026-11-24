@@ -1,19 +1,19 @@
 # Clause Circuit (`ClauseCircuit`)
 
-**Kleene 3-Valued Boolean Predicate Graph (`AND` / `OR` / `NOT` / `K_OF_N`) Closing-Condition Escrow on GenLayer StudioNet**
+**Bilateral Kleene 3-Valued Boolean Predicate Graph (`AND` / `OR` / `NOT` / `K_OF_N`) Closing-Condition Escrow with Real Native Transfers on GenLayer StudioNet**
 
-`ClauseCircuit` implements a directed acyclic boolean predicate circuit over independently adjudicated semantic atoms, backed by real native value escrow (`@gl.public.write.payable` + `_EoaRecipient.emit_transfer`) on **GenLayer StudioNet (Chain ID `61999`)**.
+`ClauseCircuit` implements a bilaterally agreed directed acyclic boolean predicate circuit over independently adjudicated natural-language filings, backed by real native value escrow (`@gl.public.write.payable` + `_EoaRecipient.emit_transfer`) on **GenLayer StudioNet (Chain ID `61999`)**.
 
 ---
 
 ## 1. Why Only GenLayer Can Do This
 
-Real-world closing conditions (such as Cross-Border M&A escrows) are rarely flat checklists where every single item must pass. Instead, they compose **regulatory quorums (`K_OF_N`)**, **alternative financing fallbacks (`OR`)**, and **fail-closed negative covenants (`NOT`)**:
+Real-world closing conditions (such as Cross-Border M&A escrows) are rarely flat checklists where every item must pass. Instead, they compose **regulatory quorums (`K_OF_N`)**, **alternative financing fallbacks (`OR`)**, and **fail-closed negative covenants (`NOT`)**:
 
-- **Traditional Smart Contracts** cannot read commit-pinned regulatory filings, lender commitment letters, or court dockets to judge whether a natural-language closing condition holds or is contradicted.
-- **Flat LLM Checklists** cannot deterministically enforce acyclicity (Kahn's topological sort), `K_OF_N` quorum short-circuiting, `OR` fallback recovery, or fail-closed Kleene 3-valued negation (`NOT(UNKNOWN) = UNKNOWN` — ensuring an unevaluated or unverifiable negative condition never silently passes).
+- **Why validators still matter under bilateral consent**: Sponsor and beneficiary mutually freeze the closing-condition graph, claims, and evidence digests up front (`DRAFT -> PROPOSED -> FROZEN`), while GenLayer validators independently adjudicate external regulatory, lender, and judicial prose that neither party can unilaterally dictate or verify deterministically.
+- **Why flat LLM checklists fall short**: Ordinary deterministic Python enforces DAG acyclicity and zero orphan draft nodes (Kahn's topological sort), `K_OF_N` quorum tolerance, live Kleene $K_3$ `OR(UNKNOWN, TRUE) == TRUE` short-circuiting, fail-closed `NOT(UNKNOWN) == UNKNOWN` negation, and real native value settlement.
 
-In `ClauseCircuit`, **validators judge only bounded leaf atoms (`TRUE` / `FALSE` / `UNKNOWN`)**, while **pure deterministic Python** validates DAG acyclicity, evaluates the Kleene 3-valued ($K_3$) circuit bottom-up, and executes real native value settlement.
+In `ClauseCircuit`, **validators judge only bounded leaf atoms (`TRUE` / `FALSE` / `UNKNOWN`) from natural-language prose**, while **pure deterministic Python** validates topology, evaluates the Kleene $K_3$ circuit bottom-up, and settles real native funds.
 
 ---
 
@@ -21,17 +21,17 @@ In `ClauseCircuit`, **validators judge only bounded leaf atoms (`TRUE` / `FALSE`
 
 ```mermaid
 flowchart TD
-    Root["root: AND"]
-    G1["gate_reg_quorum: K_OF_N (k=2 of 3)"]
-    G2["gate_financing: OR"]
-    G3["gate_no_injunction: NOT"]
+    Root["root: AND -> TRUE"]
+    G1["gate_reg_quorum: K_OF_N (2/3) -> TRUE"]
+    G2["gate_financing: OR -> TRUE (short-circuit)"]
+    G3["gate_no_injunction: NOT -> TRUE"]
 
-    A1["atom_eu_antitrust\nEU Phase-I Clearance -> TRUE"]
-    A2["atom_us_cfius\nCFIUS Unresolved -> FALSE"]
-    A3["atom_uk_cma\nUK CMA Clearance -> TRUE"]
-    A4["atom_bank_debt\nBank Debt Lapsed -> FALSE"]
-    A5["atom_bridge_equity\nBridge Equity Executed -> TRUE"]
-    A6["atom_injunction\nCourt Motion Dismissed -> FALSE"]
+    A1["atom_eu_antitrust\nEC Phase I Prose -> TRUE"]
+    A2["atom_us_cfius\nCFIUS Extended Review -> FALSE"]
+    A3["atom_uk_cma\nUK CMA Phase 1 Prose -> TRUE"]
+    A4["atom_bank_debt\nUnevaluated -> UNKNOWN"]
+    A5["atom_bridge_equity\nBridge Equity Prose -> TRUE"]
+    A6["atom_injunction\nDelaware Court Order -> FALSE"]
 
     Root --> G1
     Root --> G2
@@ -45,56 +45,63 @@ flowchart TD
     G3 --> A6
 ```
 
-- **Non-Trivial Resolution**: Two leaf atoms (`atom_us_cfius` and `atom_bank_debt`) evaluate to `FALSE` (a flat checklist would fail), yet `K_OF_N(2/3)` resolves `TRUE`, `OR(FALSE, TRUE)` resolves `TRUE`, and `NOT(FALSE)` resolves `TRUE` (after `X6` proves `NOT(UNKNOWN) = UNKNOWN` blocks premature settlement), releasing `1000` wei native escrow to `beneficiary`.
+- **Non-Trivial Live Resolution**:
+  1. `gate_reg_quorum` (`K_OF_N` 2/3) resolves `TRUE` despite `atom_us_cfius = FALSE` (a flat `AND` checklist would fail).
+  2. `gate_financing` (`OR`) **short-circuits to `TRUE` live on-chain** once `atom_bridge_equity = TRUE` while `atom_bank_debt` remains unevaluated (`UNKNOWN`).
+  3. `gate_no_injunction` (`NOT`) enforces **fail-closed `NOT(UNKNOWN) == UNKNOWN`** (`X7` reverts `CIRCUIT_STILL_UNDETERMINED`), then flips to `NOT(FALSE) == TRUE` after Delaware court prose proves the injunction motion was dismissed with prejudice, releasing `0.5 GEN` (`500000000000000000` wei) native escrow to `beneficiary`.
 
 ---
 
 ## 3. Built-In Consensus & Security Invariants
 
-1. **Real Native Value Escrow (Zero Trapped Wei)**: `open_circuit` is `@gl.public.write.payable` requiring `int(gl.message.value) == escrow_amount` and reverting via `gl.vm.UserError` on every invalid input. `withdraw_payout` follows strict Checks-Effects-Interactions and dispatches real native wei via `_EoaRecipient(gl.message.sender_address).emit_transfer(value=u256(amount))`. `cancel_draft_circuit` and permissionless post-deadline `expire_circuit` guarantee 100% refundability.
-2. **Retriable `UNKNOWN` + Conclusive Immutability**: Transient fetch/parse/hash failures (`UNKNOWN`) remain retriable up to `MAX_ATOM_ATTEMPTS = 5` (tracking `attempts`), while conclusive `TRUE`/`FALSE` verdicts are immutable (`ATOM_ALREADY_CONCLUDED`).
-3. **Strict `ATOM_VERDICT_REASONS` Compatibility Matrix**: `TRUE -> {CLAIM_VERIFIED}`, `FALSE -> {CLAIM_CONTRADICTED}`, `UNKNOWN -> {FETCH_OR_PARSE_FAILURE, HASH_MISMATCH}` enforced in `leader_fn`, `validator_fn` (exact 5-field canonical JSON + `type(a) is type(b)`), and pre-storage assertion.
-4. **Fail-Closed Clock & Bounds**: Uses only `gl.message_raw["datetime"]` (`NO_BLOCK_TIME` if unavailable, zero `time_offset` backdoors), `MAX_NODES = 24`, `MAX_ATOMS = 12`, `MAX_EVIDENCE_BYTES = 2500`, and reusable commit-pinned `raw.githubusercontent.com/<owner>/<repo>/<40-hex-sha>/<path>` allowlisting.
+1. **Bilateral Consent & Zero Orphan Nodes**: Sponsor opens payable escrow (`DRAFT`), drafts atoms/gates (with `remove_draft_node` cleanup), and locks topology via `propose_circuit` (`DRAFT -> PROPOSED`, rejecting `CYCLE_DETECTED`, `DANGLING_CHILD_REF`, and `UNREACHABLE_DRAFT_NODES`). Beneficiary must inspect and call `accept_circuit` (`PROPOSED -> FROZEN`) or `reject_circuit` (`REJECTED_REFUNDED`).
+2. **Real Native Value Escrow (Zero Trapped Wei)**: `open_circuit` is `@gl.public.write.payable` requiring exact `int(gl.message.value) == escrow_amount`. `withdraw_payout` follows strict Checks-Effects-Interactions and dispatches real native wei via `_EoaRecipient(gl.message.sender_address).emit_transfer(value=u256(amount))`. `cancel_draft_circuit`, `reject_circuit`, and permissionless post-deadline `expire_circuit` guarantee 100% refundability.
+3. **Strict Fail-Closed Compatibility & Exact 5-Field Consensus**: `ATOM_VERDICT_REASONS` maps `TRUE -> {CLAIM_VERIFIED}`, `FALSE -> {CLAIM_CONTRADICTED}`, `UNKNOWN -> {FETCH_OR_PARSE_FAILURE, HASH_MISMATCH, INCONCLUSIVE_EVIDENCE}`. Any self-contradictory pair (including `TRUE` + `CLAIM_CONTRADICTED`, which would flip under `NOT`) fails closed to retriable `UNKNOWN`. `validator_fn` enforces exact 5-field canonical JSON and Python type equality (`type(a) is type(b)`), with zero `self` references in nondeterministic closures.
+4. **Retriable `UNKNOWN` + Conclusive Immutability**: `UNKNOWN` remains retriable up to `MAX_ATOM_ATTEMPTS = 5`, while `TRUE`/`FALSE` are immutable (`ATOM_ALREADY_CONCLUDED`).
+5. **Fail-Closed Clock & Bounds**: Uses only trusted `gl.message_raw["datetime"]` (`NO_BLOCK_TIME` if absent, zero `time_offset` backdoors), `MAX_NODES = 24`, `MAX_ATOMS = 12`, `MAX_EVIDENCE_BYTES = 2500`, and commit-pinned `raw.githubusercontent.com/<owner>/<repo>/<40-hex-sha>/<path>` allowlisting.
 
 ---
 
-## 4. Verified StudioNet Deployment & 30-Transaction Ledger
+## 4. Verified StudioNet Deployment & 34-Transaction Ledger
 
 | Artifact | Value / Explorer Link |
 |---|---|
 | **Repository** | [https://github.com/Kanezar3/Clause-Circuit](https://github.com/Kanezar3/Clause-Circuit) |
-| **Deploy Commit SHA** | `7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5` |
-| **Contract Source (Pinned)** | [`contracts/clause_circuit.py`](https://github.com/Kanezar3/Clause-Circuit/blob/7d72a5eef2ada8afa4f6c4a23ff2f236108a70a5/contracts/clause_circuit.py) |
-| **Git Blob SHA-1 / On-Chain SHA-256** | `2427bea408e22f70a16fd5003126c7f7d25f407c` / `4a338dbbf69f98356e71e590643c8456118f18b96dc0432c0096510ec2ab3c42` (`blobEqualityVerified: true`) |
-| **Runner Probe Contract** | [`0x079d803C3154B8BEA59818E09d1E9CE1270Daf4f`](https://explorer-studio.genlayer.com/address/0x079d803C3154B8BEA59818E09d1E9CE1270Daf4f) |
-| **Main Contract (`ClauseCircuit`)** | [`0xCC0903589e9e3baEA151BAde30D87A592Bc00137`](https://explorer-studio.genlayer.com/address/0xCC0903589e9e3baEA151BAde30D87A592Bc00137) |
-| **Main Deploy Tx** | [`0xa2458956...dcb7f16`](https://explorer-studio.genlayer.com/tx/0xa2458956e5db1f2838996fffc86f51fe783fae1a163d39f27d1163753dcb7f16) |
-| **Release Manifest** | [`release_manifest.json`](release_manifest.json) |
+| **Deploy Commit SHA** | `d56f7eca43e073b7f0c84ab015052cf1bb034802` |
+| **Contract Source (Pinned)** | [`contracts/clause_circuit.py`](https://github.com/Kanezar3/Clause-Circuit/blob/d56f7eca43e073b7f0c84ab015052cf1bb034802/contracts/clause_circuit.py) |
+| **Git Blob SHA-1 / On-Chain SHA-256** | `a5ee58170d2ded12b8e00a5c056e14d221a47a1d` / `41ed3d55c23df196d7b802b58f1aa81bb998c25e492c16956393552d7be8a83c` (`blobEqualityVerified: true`) |
+| **Runner** | `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6` |
+| **Runner Probe Contract** | [`0x66EEB6F0C8B4077a93C3b3892fb9a80b09ee7B13`](https://explorer-studio.genlayer.com/address/0x66EEB6F0C8B4077a93C3b3892fb9a80b09ee7B13) (`probe_ok`) |
+| **Main Contract (`ClauseCircuit`)** | [`0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec`](https://explorer-studio.genlayer.com/address/0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec) |
+| **Main Deploy Tx** | [`0x1206ae01...300df7a`](https://explorer-studio.genlayer.com/tx/0x1206ae01d7dbf80eb2531c399e900a9edace1c31fa702212c859d9767300df7a) |
+| **Release Manifest** | [`release_manifest.json`](release_manifest.json) (34 txs, 0 blank errors, 34/34 read-backs) |
 
 ### Key Positive Steps & Deliberate Abuse Guards (All `FINALIZED`)
 
-| Step | Method | Caller | Result / Expected Guard | Explorer Tx |
+| Step | Method | Caller | Execution / Exact Decoded Output | Explorer Tx |
 |---|---|---|---|---|
-| **X1** | `open_circuit` | Attacker | `ERROR` (`UNAUTHORIZED_CALLER`) | [`0x9139ffd3...`](https://explorer-studio.genlayer.com/tx/0x9139ffd30cf6661d4c2d9ea0d3dba134498b20db84d1540ac75766752f0caa94) |
-| **X2** | `open_circuit` | Sponsor | `ERROR` (`ESCROW_VALUE_MISMATCH`) | [`0x7c9bbe9b...`](https://explorer-studio.genlayer.com/tx/0x7c9bbe9b8e4d35352416781183a88a1e3345d77a6493a1aab642726125739ec2) |
-| **S1** | `open_circuit` | Sponsor | `CIRCUIT_OPENED:ESCROW_1000` (`1000` wei payable) | [`0x350fd5c4...`](https://explorer-studio.genlayer.com/tx/0x350fd5c46b5668e53a36ea36117cdf6ccf8f2c10433e5758404c9984f9fb81b5) |
-| **X3** | `add_atom` | Sponsor | `ERROR` (`INVALID_EVIDENCE_URL` — unpinned `/main/`) | [`0xc592f043...`](https://explorer-studio.genlayer.com/tx/0xc592f0431292af925d33e5595e066d8cdae97a09d695b7c882fd783882b9e9dc) |
-| **X4** | `freeze_circuit` | Sponsor | `ERROR` (`CYCLE_DETECTED` — Kahn cycle guard) | [`0xcd5181bb...`](https://explorer-studio.genlayer.com/tx/0xcd5181bbc8957606b7baf7e910a7b0a5cf28ad66749d219821449bdc2d6928dd) |
-| **S12** | `freeze_circuit` | Sponsor | `CIRCUIT_FROZEN:root:NODES_10` | [`0xbb733d28...`](https://explorer-studio.genlayer.com/tx/0xbb733d2851bc069dbd4baae1a22f5615f713d4944f3f4098e62be49d18601a6e) |
-| **S13** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED` | [`0x0e89ca16...`](https://explorer-studio.genlayer.com/tx/0x0e89ca16303343a5e5ee3d3ebd58eff41398b68c4359eb2f49483359f042f076) |
-| **X5** | `evaluate_atom` | Attacker | `ERROR` (`ATOM_ALREADY_CONCLUDED` — immutability) | [`0x2bb10c49...`](https://explorer-studio.genlayer.com/tx/0x2bb10c498384633d42c8aaab1a68215218124f4ab912ad3a6b06b89e9b509685) |
-| **S14** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED` | [`0x9d217ed5...`](https://explorer-studio.genlayer.com/tx/0x9d217ed50136191db4b75b2820f01df1f13854f12589a98b68ff4c7f30c42f4e) |
-| **S15** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED` (`K_OF_N` 2/3 = `TRUE`) | [`0x7381617c...`](https://explorer-studio.genlayer.com/tx/0x7381617c86a445ef63d671fd1be5899c0ef62614cd8668e42ece6e0253f1f716) |
-| **S16** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_bank_debt:FALSE:CLAIM_CONTRADICTED` | [`0xb6ce5a78...`](https://explorer-studio.genlayer.com/tx/0xb6ce5a78eb649625589ad2910a4f52c13e0d59656b51ce241cd6d85b0ce240db) |
-| **S17** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED` (`OR` = `TRUE`) | [`0x443ec3c7...`](https://explorer-studio.genlayer.com/tx/0x443ec3c73a6d482f1d9834089e0bdbefab4f4ed2ef326dd3c3f83cf2edb92a47) |
-| **X6** | `settle_circuit` | Solver | `ERROR` (`CIRCUIT_STILL_UNDETERMINED` — `NOT(UNKNOWN)=UNKNOWN`) | [`0xe81f3ad1...`](https://explorer-studio.genlayer.com/tx/0xe81f3ad17f741d3466bc8978da1956a1bf069ba0d7c4d61188b40cc6d9d42c32) |
-| **S18** | `evaluate_atom` | Solver | `ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED` (`NOT(FALSE)=TRUE`) | [`0x30ef2799...`](https://explorer-studio.genlayer.com/tx/0x30ef27996f8d176f7730dc0f8cc46d02b64f1146977705b708f23b08510c9e7a) |
-| **S19** | `settle_circuit` | Solver | `SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000` | [`0x58848995...`](https://explorer-studio.genlayer.com/tx/0x58848995972d6240eec0f556f7a4ce84e0ff97bc53dd158dc9d017430dc1d42c) |
-| **X7** | `settle_circuit` | Attacker | `ERROR` (`CIRCUIT_ALREADY_SETTLED` — replay blocked) | [`0xcfd97685...`](https://explorer-studio.genlayer.com/tx/0xcfd97685b07cb75a6ecb759cab5421a4f837b2257bdc77a338d6f67a189a850e) |
-| **X8** | `withdraw_payout` | Attacker | `ERROR` (`NO_PENDING_PAYOUT`) | [`0x701f7982...`](https://explorer-studio.genlayer.com/tx/0x701f798274669d2b827437588a14f6c1a8bf3e8698360d4aa3d8ed7f9a900138) |
-| **S20** | `withdraw_payout` | Beneficiary | `1000` (EOA balance `0 -> 1000` wei, `conservation_ok: true`) | [`0x55571966...`](https://explorer-studio.genlayer.com/tx/0x55571966de626433bbbac0bb405cfe7be59e64fe20fb60d6f8a3c8fe9194f038) |
+| **X1** | `open_circuit` | Attacker | `ERROR` — `UNAUTHORIZED_CALLER` | [`0x89f8b52f...`](https://explorer-studio.genlayer.com/tx/0x89f8b52fa45a5e2c93b910c6efb0fdd425a2301214de2f5c7424b23a6f0f5156) |
+| **X2** | `open_circuit` | Sponsor | `ERROR` — `ESCROW_VALUE_MISMATCH` | [`0x0384aee0...`](https://explorer-studio.genlayer.com/tx/0x0384aee0653730d06e14fcb8fc2c2d8c4a6a70364a6ecbaaf5e1be35b6e4d81e) |
+| **S1** | `open_circuit` | Sponsor | `SUCCESS` — `CIRCUIT_OPENED:ESCROW_500000000000000000` (0.5 GEN) | [`0x28a8f946...`](https://explorer-studio.genlayer.com/tx/0x28a8f946724aa7f34dab69f36ba6723dc0fb8250ee42d78ff66093052e90f6d8) |
+| **X3** | `add_atom` | Sponsor | `ERROR` — `INVALID_EVIDENCE_URL` (unpinned `/main/`) | [`0x37785d71...`](https://explorer-studio.genlayer.com/tx/0x37785d71dd7398331259908fc0f2ae488c6e7878645869e327a32bf34cf60c58) |
+| **S8_RETRY** | `add_gate` | Sponsor | `ERROR` — `NODE_ALREADY_EXISTS` (RPC 502 retry; labeled in manifest) | [`0x72d24a57...`](https://explorer-studio.genlayer.com/tx/0x72d24a578aa7a2f8dd6f119898cb214d9899df0fd546e5982da9af833496d26e) |
+| **X4** | `propose_circuit` | Sponsor | `ERROR` — `CYCLE_DETECTED` (Kahn's topological sort) | [`0x2a248952...`](https://explorer-studio.genlayer.com/tx/0x2a2489522eb6d29f5df4119b8362a88a1f2a6cad8fe38ab94261883827bd17d3) |
+| **S12** | `propose_circuit` | Sponsor | `SUCCESS` — `CIRCUIT_PROPOSED:root:NODES_10` (`nodes_count: 10`) | [`0xe265fbd3...`](https://explorer-studio.genlayer.com/tx/0xe265fbd3409522fc9eff04971f6562d4f50631833fbc0a4b590cf2c6e516d3d0) |
+| **X5** | `accept_circuit` | Sponsor | `ERROR` — `UNAUTHORIZED_CALLER` (bilateral consent guard) | [`0x7fc75a13...`](https://explorer-studio.genlayer.com/tx/0x7fc75a13aafc825c4390ab7d4b7739f29244400c7a375532713e603b956f4515) |
+| **S13** | `accept_circuit` | Beneficiary | `SUCCESS` — `CIRCUIT_FROZEN:root:NODES_10` | [`0xbd61461e...`](https://explorer-studio.genlayer.com/tx/0xbd61461eca6263ce98e852ad34161e6865ee29c3038847a9367ecfdd7854451c) |
+| **S14** | `evaluate_atom` | Solver | `SUCCESS` — `ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED` | [`0x66571660...`](https://explorer-studio.genlayer.com/tx/0x665716602f3fdd4e82cbc816689c8cd5e16e0b8cd7c6d89d4e055e1bba6ebdd1) |
+| **X6** | `evaluate_atom` | Attacker | `ERROR` — `ATOM_ALREADY_CONCLUDED` (immutability) | [`0x3151b82f...`](https://explorer-studio.genlayer.com/tx/0x3151b82fb52db2b44b349ee934741505f6f95b6e4514c1c4ae7a97998dcde6aa) |
+| **S15** | `evaluate_atom` | Solver | `SUCCESS` — `ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED` | [`0x006af32a...`](https://explorer-studio.genlayer.com/tx/0x006af32a8005b06a4da5ad784ebe827f4cfb18e0bc45989b4dec13bd25dfb981) |
+| **S16** | `evaluate_atom` | Solver | `SUCCESS` — `ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED` (`K_OF_N` 2/3 = `TRUE`) | [`0x8c1c000b...`](https://explorer-studio.genlayer.com/tx/0x8c1c000b17fa544c5520263dcd003dd8c55ba46140ab13e9a69ce460e8153d5c) |
+| **S17** | `evaluate_atom` | Solver | `SUCCESS` — `ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED` (`OR(UNKNOWN, TRUE)=TRUE`) | [`0x97f4dff9...`](https://explorer-studio.genlayer.com/tx/0x97f4dff996b72bce1e55612d4fcb493a947fb7733f936a1bb1fabb86f2b237d1) |
+| **X7** | `settle_circuit` | Solver | `ERROR` — `CIRCUIT_STILL_UNDETERMINED` (`NOT(UNKNOWN)=UNKNOWN`) | [`0x00712482...`](https://explorer-studio.genlayer.com/tx/0x00712482e639c18c7a1b227a6ecb850a7e5b51a64e5bd92f2bf80bde73ec4820) |
+| **S18** | `evaluate_atom` | Solver | `SUCCESS` — `ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED` (`NOT(FALSE)=TRUE`) | [`0x0c0b5cb4...`](https://explorer-studio.genlayer.com/tx/0x0c0b5cb4f2b60a3ee1e174ac560be7bb5da1667776e505390d3e85dbb9bdd565) |
+| **S19** | `settle_circuit` | Solver | `SUCCESS` — `SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_500000000000000000` | [`0x44a17de2...`](https://explorer-studio.genlayer.com/tx/0x44a17de2106cc89db5cf8771c9d17e296cf66052cf0f35d177cfa4528bcfdff2) |
+| **X8** | `settle_circuit` | Attacker | `ERROR` — `CIRCUIT_ALREADY_SETTLED` (replay blocked) | [`0x216d6478...`](https://explorer-studio.genlayer.com/tx/0x216d647817b2f936090b4ec1337b3ea8ddded880d8231146132480b27bf0c140) |
+| **X9** | `withdraw_payout` | Attacker | `ERROR` — `NO_PENDING_PAYOUT` | [`0xcfb31c9e...`](https://explorer-studio.genlayer.com/tx/0xcfb31c9e1acf16812ad3229b164227ff88a3e7814071727744ebd72c74a321b8) |
+| **S20** | `withdraw_payout` | Beneficiary | `SUCCESS` — `500000000000000000` (contract `0.5 -> 0 GEN`; EOA `+0.49987 GEN` net of v2 fee) | [`0x5edc46bc...`](https://explorer-studio.genlayer.com/tx/0x5edc46bc3ff6846a36a87470c132fcf1b2ac7de893260bd3a5d4add918224380) |
 
-*(Full 30-transaction ledger including `S2–S11C` setup calls, validator votes, and state read-backs is recorded in [`release_manifest.json`](release_manifest.json).)*
+*(All 34 finalized transactions—including setup `S2–S11E`, validator votes, exact decoded outputs, and 34/34 state read-backs—are recorded in [`release_manifest.json`](release_manifest.json).)*
 
 ---
 
@@ -104,5 +111,5 @@ flowchart TD
 genvm-lint contracts/clause_circuit.py
 pytest tests -v
 ```
-- `genvm-lint`: **3/3 checks passed**
-- `pytest`: **8/8 tests passed** covering Kleene $K_3$ happy path, short-circuit falsification, adversarial leader tampering, compatibility tables, retriable `UNKNOWN` + conclusive immutability, Kahn cycle detection, fail-closed evidence, and global bounds.
+- `genvm-lint` (`0.11.0`): **3/3 checks passed**
+- `pytest` (`9.2.0`): **8/8 tests passed** covering Kleene $K_3$ short-circuiting (`OR(UNKNOWN, TRUE)` & short-circuit falsification), bilateral consent (`propose_circuit` / `accept_circuit` / `reject_circuit`), adversarial leader tampering, strict fail-closed compatibility (`TRUE + CLAIM_CONTRADICTED -> UNKNOWN`), `INCONCLUSIVE_EVIDENCE` retries, Kahn cycle & orphan-node guards, fail-closed evidence, and global bounds.
