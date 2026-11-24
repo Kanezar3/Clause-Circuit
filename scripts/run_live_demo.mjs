@@ -19,6 +19,39 @@ function sha256(bufOrStr) {
   return crypto.createHash('sha256').update(bufOrStr).digest('hex');
 }
 
+function tryExec(cmd) {
+  try {
+    return execSync(cmd, { cwd: ROOT_DIR, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function getToolchainVersions() {
+  let genlayerJs = 'unknown';
+  for (const base of [ROOT_DIR, __dirname]) {
+    try {
+      genlayerJs = JSON.parse(
+        fs.readFileSync(path.join(base, 'node_modules', 'genlayer-js', 'package.json'), 'utf-8')
+      ).version;
+      break;
+    } catch {}
+  }
+  return {
+    node: process.version,
+    genlayerJs,
+    python: tryExec('python --version'),
+    pytest: tryExec('python -m pytest --version').split('\n')[0],
+    genvmLinter: '0.11.0'
+  };
+}
+
+function extractRunnerDepends(sourceText) {
+  const firstLine = sourceText.split(/\r?\n/)[0] || '';
+  const m = firstLine.match(/"Depends"\s*:\s*"([^"]+)"/);
+  return m ? m[1] : firstLine;
+}
+
 function loadState() {
   if (fs.existsSync(STATE_FILE)) {
     return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
@@ -77,16 +110,53 @@ function normalizeReadable(val) {
   return s;
 }
 
+function decodeGenVmErrorPayload(val) {
+  if (!val) return '';
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (/^[A-Za-z0-9+/]+=*$/.test(trimmed) && trimmed.length >= 4) {
+      try {
+        const buf = Buffer.from(trimmed, 'base64');
+        if (buf.length > 1 && (buf[0] === 1 || buf[0] === 2)) {
+          const text = buf.subarray(1).toString('utf-8').trim();
+          if (text && /^[\x20-\x7e\r\n\t]+$/.test(text)) return text;
+        }
+        const full = buf.toString('utf-8').trim();
+        if (full && /^[\x20-\x7e\r\n\t]+$/.test(full)) return full;
+      } catch {}
+    }
+    return normalizeReadable(trimmed);
+  }
+  if (typeof val === 'object') {
+    if (val.payload?.readable !== undefined) return normalizeReadable(String(val.payload.readable));
+    if (typeof val.payload === 'string') return decodeGenVmErrorPayload(val.payload);
+    if (typeof val.raw === 'string') return decodeGenVmErrorPayload(val.raw);
+    if (val.raw instanceof Uint8Array || Array.isArray(val.raw)) {
+      const buf = Buffer.from(val.raw);
+      const slice = buf.length > 1 && (buf[0] === 1 || buf[0] === 2) ? buf.subarray(1) : buf;
+      return slice.toString('utf-8').trim();
+    }
+  }
+  return '';
+}
+
 function extractResultInfo(tx) {
   let statusName = tx.status_name || (tx.status !== undefined ? (STATUS_NAMES[tx.status] || String(tx.status)) : '');
   let resultName = tx.result_name || (tx.result !== undefined ? String(tx.result) : '');
   const receipt = tx.consensus_data?.leader_receipt?.[0] || {};
   const execResult = receipt.execution_result || '';
-  const stderr = receipt.genvm_result?.stderr || '';
+  const stderr =
+    receipt.genvm_result?.stderr ||
+    receipt.genvm_result?.error_description ||
+    (receipt.genvm_result?.raw_error ? JSON.stringify(receipt.genvm_result.raw_error) : '') ||
+    '';
   const readableRaw = receipt.result?.payload?.readable;
-  const readableStr = typeof readableRaw === 'string'
-    ? normalizeReadable(readableRaw)
-    : (readableRaw !== undefined ? JSON.stringify(readableRaw) : '');
+  let readableStr = '';
+  if (readableRaw !== undefined && readableRaw !== null && String(readableRaw).trim() !== '') {
+    readableStr = typeof readableRaw === 'string' ? normalizeReadable(readableRaw) : JSON.stringify(readableRaw);
+  } else {
+    readableStr = decodeGenVmErrorPayload(receipt.result);
+  }
   const votes = tx.consensus_data?.votes || {};
   const contractAddress = tx.data?.contract_address || tx.contract_address || '';
   return { statusName, resultName, execResult, stderr, readableStr, votes, contractAddress };
@@ -105,19 +175,30 @@ async function waitForReceipt(client, txHash, { expectSuccess = true, maxAttempt
         if (info.statusName === 'UNDETERMINED') {
           throw new Error(`Transaction ${txHash} ended UNDETERMINED`);
         }
+        let readableStr = info.readableStr;
+        let stderr = info.stderr;
+        // Fallback: fetch raw RPC receipt to decode Base64 UserError payload (0x01 + UTF-8)
+        if (!readableStr && !stderr) {
+          try {
+            const rawTx = await rawRpcCall('eth_getTransactionByHash', [txHash]);
+            const rawReceipt = rawTx?.consensus_data?.leader_receipt?.[0] || {};
+            readableStr = decodeGenVmErrorPayload(rawReceipt.result);
+            stderr = rawReceipt.genvm_result?.stderr || rawReceipt.genvm_result?.error_description || '';
+          } catch {}
+        }
         if (expectSuccess && info.execResult && info.execResult !== 'SUCCESS') {
-          throw new Error(`Transaction ${txHash} finalized with GenVM ${info.execResult} (expected SUCCESS). stderr=${info.stderr} readable=${info.readableStr}`);
+          throw new Error(`Transaction ${txHash} finalized with GenVM ${info.execResult} (expected SUCCESS). stderr=${stderr} readable=${readableStr}`);
         }
         if (!expectSuccess && info.execResult === 'SUCCESS') {
-          throw new Error(`Transaction ${txHash} unexpectedly SUCCEEDED (expected ERROR). readable=${info.readableStr}`);
+          throw new Error(`Transaction ${txHash} unexpectedly SUCCEEDED (expected ERROR). readable=${readableStr}`);
         }
         return {
           finalized: true,
           status: info.statusName,
           result: info.resultName,
           executionResult: info.execResult,
-          returnReadable: info.readableStr,
-          stderr: info.stderr,
+          returnReadable: readableStr,
+          stderr,
           votes: info.votes,
           contractAddress: info.contractAddress
         };
@@ -179,11 +260,18 @@ async function safeWrite(client, { address, functionName, args = [], value = 0n,
   return { txHash, receipt };
 }
 
-function assertExpected(step, actual, expected) {
+function assertExpected(step, actual, expected, expectSuccess) {
   const a = normalizeReadable(actual);
   const e = normalizeReadable(expected);
-  if (e && a !== e) {
-    throw new Error(`STOP: Step ${step} landed unexpectedly! expected="${e}" got="${a}"`);
+  if (!e) return;
+  if (expectSuccess) {
+    if (a !== e) {
+      throw new Error(`STOP: Step ${step} landed unexpectedly! expected="${e}" got="${a}"`);
+    }
+  } else {
+    if (!a || !a.includes(e)) {
+      throw new Error(`STOP: Expected failure ${step} did not match guard! expected="${e}" got="${a}"`);
+    }
   }
 }
 
@@ -236,14 +324,16 @@ async function main() {
   const blobSha = execSync('git rev-parse HEAD:contracts/clause_circuit.py', { cwd: ROOT_DIR, encoding: 'utf-8' }).trim();
   const contractCode = fs.readFileSync(CONTRACT_FILE, 'utf-8');
   const localContractSha256 = sha256(contractCode);
+  const runnerDepends = extractRunnerDepends(contractCode);
+  const toolchainVersions = getToolchainVersions();
 
   const EVIDENCE_FILES = [
-    'atom_eu_antitrust.json',
-    'atom_us_cfius.json',
-    'atom_uk_cma.json',
-    'atom_bank_debt.json',
-    'atom_bridge_equity.json',
-    'atom_injunction.json'
+    'atom_eu_antitrust.txt',
+    'atom_us_cfius.txt',
+    'atom_uk_cma.txt',
+    'atom_bank_debt.txt',
+    'atom_bridge_equity.txt',
+    'atom_injunction.txt'
   ];
   const EVIDENCES = {};
   const evidenceManifestList = [];
@@ -271,7 +361,7 @@ async function main() {
     const manifest = {
       projectName: 'ClauseCircuit',
       humanName: 'Clause Circuit',
-      description: 'Kleene 3-Valued Boolean Predicate Graph (AND/OR/NOT/K_OF_N) Closing-Condition Escrow with Real Native Transfers on GenLayer StudioNet',
+      description: 'Bilateral Kleene 3-Valued Boolean Predicate Graph (AND/OR/NOT/K_OF_N) Closing-Condition Escrow with Real Native Transfers on GenLayer StudioNet',
       repositoryUrl: 'https://github.com/Kanezar3/Clause-Circuit',
       deployCommitSha: commitSha,
       contractPath: 'contracts/clause_circuit.py',
@@ -279,6 +369,9 @@ async function main() {
       localContractSha256,
       onChainCodeSha256: s.onChainSha256 || '',
       blobEqualityVerified: s.blobEquality || false,
+      runner: runnerDepends,
+      constructorArgs: [],
+      toolchainVersions,
       settlementMode: 'OPTION_A_REAL_NATIVE_PAYABLE',
       probeContractAddress: s.probeAddress || '',
       probeDeployTxHash: s.probeDeployTx || '',
@@ -302,7 +395,7 @@ async function main() {
       evidenceFiles: evidenceManifestList,
       transactions: s.history || []
     };
-    fs.writeFileSync(MANIFEST_FILE, JSON.stringify(manifest, null, 2));
+    fs.writeFileSync(MANIFEST_FILE, JSON.stringify(manifest, null, 2) + '\n');
   }
 
   function recordStep(stepObj) {
@@ -357,15 +450,20 @@ async function main() {
     console.log(`[PASS] Byte-for-byte on-chain equality verified (SHA-256: ${onChainSha256})`);
   }
 
-  async function runStep({ step, scenario, role, functionName, args = [], value = 0n, expectSuccess = true, expected, readBackFn = null }) {
+  const readStatus = async () => JSON.parse(await readContractWithRetry(clients.sponsor, { address: MAIN_ADDR, functionName: 'get_circuit_status' }));
+  const readEval = async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'evaluate_circuit_view' }));
+  const readNode = (id) => async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_node', args: [id] }));
+  const readAcct = async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_accounting_summary' }));
+
+  async function runStep({ step, scenario, role, functionName, args = [], value = 0n, expectSuccess = true, expected, readBackFn = readStatus }) {
     if (history.find(h => h.step === step)) return;
     console.log(`\n--- Step ${step}: ${scenario} ---`);
     const { txHash, receipt } = await safeWrite(clients[role], {
       address: MAIN_ADDR, functionName, args, value, expectSuccess
     });
     const retOrErr = expectSuccess ? receipt.returnReadable : (receipt.returnReadable || receipt.stderr || '');
-    if (expectSuccess && expected !== undefined) {
-      assertExpected(step, receipt.returnReadable, expected);
+    if (expected !== undefined) {
+      assertExpected(step, retOrErr, expected, expectSuccess);
     }
     const readBack = readBackFn ? await readBackFn() : undefined;
     recordStep({
@@ -381,46 +479,45 @@ async function main() {
   await runStep({
     step: 'X1', scenario: 'Unauthorized Non-Sponsor open_circuit Blocked', role: 'attacker',
     functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 1000n,
-    expectSuccess: false, expected: 'UNAUTHORIZED_CALLER'
+    expectSuccess: false, expected: 'UNAUTHORIZED_CALLER', readBackFn: readStatus
   });
 
   // X2: Value mismatch on payable open_circuit
   await runStep({
     step: 'X2', scenario: 'Payable Escrow Value Mismatch Blocked', role: 'sponsor',
     functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 500n,
-    expectSuccess: false, expected: 'ESCROW_VALUE_MISMATCH'
+    expectSuccess: false, expected: 'ESCROW_VALUE_MISMATCH', readBackFn: readStatus
   });
 
   // S1: Open circuit with 1000 wei real native escrow
   await runStep({
     step: 'S1', scenario: 'Sponsor Opens Circuit with 1000 wei Payable Escrow', role: 'sponsor',
     functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 1000n,
-    expectSuccess: true, expected: 'CIRCUIT_OPENED:ESCROW_1000',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.sponsor, { address: MAIN_ADDR, functionName: 'get_circuit_status' }))
+    expectSuccess: true, expected: 'CIRCUIT_OPENED:ESCROW_1000', readBackFn: readStatus
   });
 
   // X3: Unpinned /main/ URL blocked
   await runStep({
     step: 'X3', scenario: 'Unpinned Mutable /main/ URL Blocked', role: 'sponsor',
     functionName: 'add_atom',
-    args: ['bad_url', 'Claim', 'https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/main/evidence/atom_eu_antitrust.json', EVIDENCES['atom_eu_antitrust.json'].hash],
-    expectSuccess: false, expected: 'INVALID_EVIDENCE_URL'
+    args: ['bad_url', 'Claim', 'https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/main/evidence/atom_eu_antitrust.txt', EVIDENCES['atom_eu_antitrust.txt'].hash],
+    expectSuccess: false, expected: 'INVALID_EVIDENCE_URL', readBackFn: readStatus
   });
 
-  // S2-S7: Add 6 M&A atoms
+  // S2-S7: Add 6 natural-language prose M&A atoms
   const atomKeys = [
-    ['S2', 'atom_eu_antitrust', 'atom_eu_antitrust.json'],
-    ['S3', 'atom_us_cfius', 'atom_us_cfius.json'],
-    ['S4', 'atom_uk_cma', 'atom_uk_cma.json'],
-    ['S5', 'atom_bank_debt', 'atom_bank_debt.json'],
-    ['S6', 'atom_bridge_equity', 'atom_bridge_equity.json'],
-    ['S7', 'atom_injunction', 'atom_injunction.json']
+    ['S2', 'atom_eu_antitrust', 'atom_eu_antitrust.txt'],
+    ['S3', 'atom_us_cfius', 'atom_us_cfius.txt'],
+    ['S4', 'atom_uk_cma', 'atom_uk_cma.txt'],
+    ['S5', 'atom_bank_debt', 'atom_bank_debt.txt'],
+    ['S6', 'atom_bridge_equity', 'atom_bridge_equity.txt'],
+    ['S7', 'atom_injunction', 'atom_injunction.txt']
   ];
   for (const [st, id, fname] of atomKeys) {
     await runStep({
       step: st, scenario: `Sponsor Adds Atom ${id}`, role: 'sponsor',
       functionName: 'add_atom', args: [id, CLAIMS[id], EVIDENCES[fname].url, EVIDENCES[fname].hash],
-      expectSuccess: true, expected: `ATOM_ADDED:${id}`
+      expectSuccess: true, expected: `ATOM_ADDED:${id}`, readBackFn: readNode(id)
     });
   }
 
@@ -428,122 +525,139 @@ async function main() {
   await runStep({
     step: 'S8', scenario: 'Sponsor Adds K_OF_N (2 of 3) Regulatory Quorum Gate', role: 'sponsor',
     functionName: 'add_gate', args: ['gate_reg_quorum', 'K_OF_N', ['atom_eu_antitrust', 'atom_us_cfius', 'atom_uk_cma'], 2],
-    expectSuccess: true, expected: 'GATE_ADDED:gate_reg_quorum:K_OF_N'
+    expectSuccess: true, expected: 'GATE_ADDED:gate_reg_quorum:K_OF_N', readBackFn: readNode('gate_reg_quorum')
   });
   await runStep({
     step: 'S9', scenario: 'Sponsor Adds OR Financing Fallback Gate', role: 'sponsor',
     functionName: 'add_gate', args: ['gate_financing', 'OR', ['atom_bank_debt', 'atom_bridge_equity'], 0],
-    expectSuccess: true, expected: 'GATE_ADDED:gate_financing:OR'
+    expectSuccess: true, expected: 'GATE_ADDED:gate_financing:OR', readBackFn: readNode('gate_financing')
   });
   await runStep({
     step: 'S10', scenario: 'Sponsor Adds NOT Active-Injunction Gate', role: 'sponsor',
     functionName: 'add_gate', args: ['gate_no_injunction', 'NOT', ['atom_injunction'], 0],
-    expectSuccess: true, expected: 'GATE_ADDED:gate_no_injunction:NOT'
+    expectSuccess: true, expected: 'GATE_ADDED:gate_no_injunction:NOT', readBackFn: readNode('gate_no_injunction')
   });
   await runStep({
     step: 'S11', scenario: 'Sponsor Adds Root AND Closing Gate', role: 'sponsor',
     functionName: 'add_gate', args: ['root', 'AND', ['gate_reg_quorum', 'gate_financing', 'gate_no_injunction'], 0],
-    expectSuccess: true, expected: 'GATE_ADDED:root:AND'
+    expectSuccess: true, expected: 'GATE_ADDED:root:AND', readBackFn: readNode('root')
   });
 
-  // Add cyclic test gates (outside root's subgraph) to prove Kahn cycle rejection on-chain in X4
+  // Prove Kahn's cycle rejection (X4) and orphan cleanup (S11D/S11E -> zero dead nodes in storage)
   await runStep({
-    step: 'S11B', scenario: 'Sponsor Adds Auxiliary Cyclic Gate g_cyc1 (For Cycle Guard Proof)', role: 'sponsor',
+    step: 'S11B', scenario: 'Sponsor Adds Temporary Cyclic Gate g_cyc1 (Cycle Guard Test)', role: 'sponsor',
     functionName: 'add_gate', args: ['g_cyc1', 'OR', ['atom_eu_antitrust', 'g_cyc2'], 0],
-    expectSuccess: true, expected: 'GATE_ADDED:g_cyc1:OR'
+    expectSuccess: true, expected: 'GATE_ADDED:g_cyc1:OR', readBackFn: readStatus
   });
   await runStep({
-    step: 'S11C', scenario: 'Sponsor Adds Auxiliary Cyclic Gate g_cyc2 (Closes Cycle)', role: 'sponsor',
+    step: 'S11C', scenario: 'Sponsor Adds Temporary Cyclic Gate g_cyc2 (Closes Cycle)', role: 'sponsor',
     functionName: 'add_gate', args: ['g_cyc2', 'NOT', ['g_cyc1'], 0],
-    expectSuccess: true, expected: 'GATE_ADDED:g_cyc2:NOT'
+    expectSuccess: true, expected: 'GATE_ADDED:g_cyc2:NOT', readBackFn: readStatus
   });
   await runStep({
     step: 'X4', scenario: 'Kahn Topological Sort Rejects Cyclic Circuit Root', role: 'sponsor',
-    functionName: 'freeze_circuit', args: ['g_cyc1'],
-    expectSuccess: false, expected: 'CYCLE_DETECTED'
+    functionName: 'propose_circuit', args: ['g_cyc1'],
+    expectSuccess: false, expected: 'CYCLE_DETECTED', readBackFn: readStatus
+  });
+  await runStep({
+    step: 'S11D', scenario: 'Sponsor Removes Temporary Cyclic Gate g_cyc2 from Draft', role: 'sponsor',
+    functionName: 'remove_draft_node', args: ['g_cyc2'],
+    expectSuccess: true, expected: 'NODE_REMOVED:g_cyc2', readBackFn: readStatus
+  });
+  await runStep({
+    step: 'S11E', scenario: 'Sponsor Removes Temporary Cyclic Gate g_cyc1 from Draft', role: 'sponsor',
+    functionName: 'remove_draft_node', args: ['g_cyc1'],
+    expectSuccess: true, expected: 'NODE_REMOVED:g_cyc1', readBackFn: readStatus
   });
 
-  // S12: Freeze valid acyclic root circuit (10 reachable nodes)
+  // S12: Sponsor proposes clean 10-node acyclic DAG (nodes_count === 10, zero orphans)
   await runStep({
-    step: 'S12', scenario: 'Sponsor Freezes Acyclic 10-Node M&A Circuit', role: 'sponsor',
-    functionName: 'freeze_circuit', args: ['root'],
-    expectSuccess: true, expected: 'CIRCUIT_FROZEN:root:NODES_10',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.sponsor, { address: MAIN_ADDR, functionName: 'evaluate_circuit_view' }))
+    step: 'S12', scenario: 'Sponsor Proposes Clean Acyclic 10-Node M&A Circuit (DRAFT -> PROPOSED)', role: 'sponsor',
+    functionName: 'propose_circuit', args: ['root'],
+    expectSuccess: true, expected: 'CIRCUIT_PROPOSED:root:NODES_10', readBackFn: readStatus
   });
 
-  // S13: Evaluate atom_eu_antitrust -> TRUE
+  // X5: Sponsor/non-beneficiary CANNOT unilaterally freeze the circuit
   await runStep({
-    step: 'S13', scenario: 'Consensus Adjudicates EU Antitrust Clearance -> TRUE', role: 'solver',
+    step: 'X5', scenario: 'Unilateral Non-Beneficiary accept_circuit Blocked (Bilateral Consent Guard)', role: 'sponsor',
+    functionName: 'accept_circuit', args: [],
+    expectSuccess: false, expected: 'UNAUTHORIZED_CALLER', readBackFn: readStatus
+  });
+
+  // S13: Beneficiary verifies claims/hashes and activates circuit (PROPOSED -> FROZEN)
+  await runStep({
+    step: 'S13', scenario: 'Beneficiary Accepts Proposed Circuit (PROPOSED -> FROZEN)', role: 'beneficiary',
+    functionName: 'accept_circuit', args: [],
+    expectSuccess: true, expected: 'CIRCUIT_FROZEN:root:NODES_10', readBackFn: readEval
+  });
+
+  // S14: Evaluate atom_eu_antitrust -> TRUE
+  await runStep({
+    step: 'S14', scenario: 'Consensus Adjudicates EU Antitrust Prose Notice -> TRUE', role: 'solver',
     functionName: 'evaluate_atom', args: ['atom_eu_antitrust'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_node', args: ['atom_eu_antitrust'] }))
+    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED', readBackFn: readNode('atom_eu_antitrust')
   });
 
-  // X5: Re-evaluate concluded atom blocked
+  // X6: Re-evaluate concluded atom blocked
   await runStep({
-    step: 'X5', scenario: 'Re-Evaluation of Concluded TRUE Atom Blocked (Immutability)', role: 'attacker',
+    step: 'X6', scenario: 'Re-Evaluation of Concluded TRUE Atom Blocked (Immutability)', role: 'attacker',
     functionName: 'evaluate_atom', args: ['atom_eu_antitrust'],
-    expectSuccess: false, expected: 'ATOM_ALREADY_CONCLUDED'
+    expectSuccess: false, expected: 'ATOM_ALREADY_CONCLUDED', readBackFn: readNode('atom_eu_antitrust')
   });
 
-  // S14-S17: Evaluate remaining 4 atoms (US CFIUS FALSE, UK CMA TRUE, Bank Debt FALSE, Bridge Equity TRUE)
+  // S15-S16: Evaluate CFIUS (FALSE) + UK CMA (TRUE) -> K_OF_N(2/3) becomes TRUE despite 1 FALSE!
   await runStep({
-    step: 'S14', scenario: 'Consensus Adjudicates US CFIUS Mitigation Unresolved -> FALSE', role: 'solver',
+    step: 'S15', scenario: 'Consensus Adjudicates US CFIUS Extended Review Notice -> FALSE', role: 'solver',
     functionName: 'evaluate_atom', args: ['atom_us_cfius'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED'
+    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED', readBackFn: readNode('atom_us_cfius')
   });
   await runStep({
-    step: 'S15', scenario: 'Consensus Adjudicates UK CMA Clearance -> TRUE (K_OF_N 2/3 Satisfied)', role: 'solver',
+    step: 'S16', scenario: 'Consensus Adjudicates UK CMA Phase 1 Notice -> TRUE (K_OF_N 2/3 Satisfied)', role: 'solver',
     functionName: 'evaluate_atom', args: ['atom_uk_cma'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED'
+    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED', readBackFn: readEval
   });
+
+  // S17: Evaluate ONLY atom_bridge_equity -> TRUE while leaving atom_bank_debt UNKNOWN!
+  // Proves LIVE Kleene K3 OR(UNKNOWN, TRUE) == TRUE short-circuiting!
   await runStep({
-    step: 'S16', scenario: 'Consensus Adjudicates Bank Debt Lapsed -> FALSE', role: 'solver',
-    functionName: 'evaluate_atom', args: ['atom_bank_debt'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_bank_debt:FALSE:CLAIM_CONTRADICTED'
-  });
-  await runStep({
-    step: 'S17', scenario: 'Consensus Adjudicates Bridge Equity Executed -> TRUE (OR Fallback Satisfied)', role: 'solver',
+    step: 'S17', scenario: 'Consensus Adjudicates Bridge Equity Notice -> TRUE (Live OR(UNKNOWN, TRUE) Short-Circuit)', role: 'solver',
     functionName: 'evaluate_atom', args: ['atom_bridge_equity'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'evaluate_circuit_view' }))
+    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED', readBackFn: readEval
   });
 
-  // X6: Fail-closed NOT(UNKNOWN) == UNKNOWN blocks premature settlement
+  // X7: Fail-closed NOT(UNKNOWN) == UNKNOWN blocks premature settlement
   await runStep({
-    step: 'X6', scenario: 'Fail-Closed NOT(UNKNOWN) Blocks Premature Settlement', role: 'solver',
+    step: 'X7', scenario: 'Fail-Closed NOT(UNKNOWN) Blocks Premature Settlement', role: 'solver',
     functionName: 'settle_circuit', args: [],
-    expectSuccess: false, expected: 'CIRCUIT_STILL_UNDETERMINED'
+    expectSuccess: false, expected: 'CIRCUIT_STILL_UNDETERMINED', readBackFn: readStatus
   });
 
-  // S18: Evaluate atom_injunction -> FALSE => NOT(FALSE) == TRUE => root == TRUE!
+  // S18: Evaluate atom_injunction -> FALSE => NOT(FALSE) == TRUE => root == TRUE (while atom_bank_debt remains UNKNOWN!)
   await runStep({
-    step: 'S18', scenario: 'Consensus Adjudicates Court Injunction Dismissed -> FALSE (NOT(FALSE)=TRUE)', role: 'solver',
+    step: 'S18', scenario: 'Consensus Adjudicates Delaware Court Order -> FALSE (NOT(FALSE)=TRUE, root=TRUE)', role: 'solver',
     functionName: 'evaluate_atom', args: ['atom_injunction'],
-    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'evaluate_circuit_view' }))
+    expectSuccess: true, expected: 'ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED', readBackFn: readEval
   });
 
   // S19: Permissionless Kleene K3 Settlement -> RELEASED_TO_BENEFICIARY
   await runStep({
     step: 'S19', scenario: 'Permissionless Kleene K3 Settlement Releases 1000 wei to Beneficiary', role: 'solver',
     functionName: 'settle_circuit', args: [],
-    expectSuccess: true, expected: 'SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000',
-    readBackFn: async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_accounting_summary' }))
+    expectSuccess: true, expected: 'SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000', readBackFn: readAcct
   });
 
-  // X7: Replay settlement blocked
+  // X8: Replay settlement blocked
   await runStep({
-    step: 'X7', scenario: 'Replay settle_circuit Blocked After Terminal Settlement', role: 'attacker',
+    step: 'X8', scenario: 'Replay settle_circuit Blocked After Terminal Settlement', role: 'attacker',
     functionName: 'settle_circuit', args: [],
-    expectSuccess: false, expected: 'CIRCUIT_ALREADY_SETTLED'
+    expectSuccess: false, expected: 'CIRCUIT_ALREADY_SETTLED', readBackFn: readAcct
   });
 
-  // X8: Zero-balance withdrawal blocked
+  // X9: Zero-balance withdrawal blocked
   await runStep({
-    step: 'X8', scenario: 'Unauthorized Zero-Balance Withdrawal Blocked', role: 'attacker',
+    step: 'X9', scenario: 'Unauthorized Zero-Balance Withdrawal Blocked', role: 'attacker',
     functionName: 'withdraw_payout', args: [],
-    expectSuccess: false, expected: 'NO_PENDING_PAYOUT'
+    expectSuccess: false, expected: 'NO_PENDING_PAYOUT', readBackFn: readAcct
   });
 
   // S20: Beneficiary withdraws 1000 wei real native value via _EoaRecipient.emit_transfer
@@ -557,7 +671,7 @@ async function main() {
       readBackFn: async () => {
         const balAfterHex = await rawRpcCall('eth_getBalance', [accounts.beneficiary.address, 'latest']);
         const balAfter = BigInt(balAfterHex || '0x0');
-        const acct = JSON.parse(await readContractWithRetry(clients.beneficiary, { address: MAIN_ADDR, functionName: 'get_accounting_summary' }));
+        const acct = await readAcct();
         return {
           beneficiary_eoa_balance_before_wei: balBefore.toString(),
           beneficiary_eoa_balance_after_wei: balAfter.toString(),

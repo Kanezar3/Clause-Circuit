@@ -38,12 +38,12 @@ COMMIT_SHA = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
 BASE_URL = f"https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/{COMMIT_SHA}/evidence"
 
 FILES = {
-    "atom_eu_antitrust": "atom_eu_antitrust.json",
-    "atom_us_cfius": "atom_us_cfius.json",
-    "atom_uk_cma": "atom_uk_cma.json",
-    "atom_bank_debt": "atom_bank_debt.json",
-    "atom_bridge_equity": "atom_bridge_equity.json",
-    "atom_injunction": "atom_injunction.json",
+    "atom_eu_antitrust": "atom_eu_antitrust.txt",
+    "atom_us_cfius": "atom_us_cfius.txt",
+    "atom_uk_cma": "atom_uk_cma.txt",
+    "atom_bank_debt": "atom_bank_debt.txt",
+    "atom_bridge_equity": "atom_bridge_equity.txt",
+    "atom_injunction": "atom_injunction.txt",
 }
 
 CLAIMS = {
@@ -74,19 +74,19 @@ def setup_ma_fixtures() -> dict[str, dict]:
 
 def setup_ma_llm():
     def handler(prompt: str) -> dict:
-        if "EC-M-2026-11402" in prompt:
+        if "Case M.11402" in prompt:
             return {"verdict": "TRUE", "reason": "CLAIM_VERIFIED"}
         if "CFIUS-2026-08914" in prompt:
             return {"verdict": "FALSE", "reason": "CLAIM_CONTRADICTED"}
-        if "CMA-ME-2026-7118" in prompt:
+        if "Case ME/7118/26" in prompt:
             return {"verdict": "TRUE", "reason": "CLAIM_VERIFIED"}
         if "SYND-DEBT-2026-441" in prompt:
             return {"verdict": "FALSE", "reason": "CLAIM_CONTRADICTED"}
         if "BRIDGE-EQ-2026-908" in prompt:
             return {"verdict": "TRUE", "reason": "CLAIM_VERIFIED"}
-        if "CA-2026-1192-DEL" in prompt:
+        if "2026-1192-DEL" in prompt:
             return {"verdict": "FALSE", "reason": "CLAIM_CONTRADICTED"}
-        return {"verdict": "UNKNOWN", "reason": "FETCH_OR_PARSE_FAILURE"}
+        return {"verdict": "UNKNOWN", "reason": "INCONCLUSIVE_EVIDENCE"}
 
     mock_llm_responses.append(handler)
 
@@ -114,13 +114,17 @@ def build_ma_circuit(contract: ClauseCircuit, fx: dict[str, dict], escrow: int =
     assert contract.add_gate("gate_financing", "OR", ["atom_bank_debt", "atom_bridge_equity"], 0) == "GATE_ADDED:gate_financing:OR"
     assert contract.add_gate("gate_no_injunction", "NOT", ["atom_injunction"], 0) == "GATE_ADDED:gate_no_injunction:NOT"
     assert contract.add_gate("root", "AND", ["gate_reg_quorum", "gate_financing", "gate_no_injunction"], 0) == "GATE_ADDED:root:AND"
-    assert contract.freeze_circuit("root") == "CIRCUIT_FROZEN:root:NODES_10"
+
+    # Bilateral freeze: sponsor proposes, beneficiary verifies and accepts
+    assert contract.propose_circuit("root") == "CIRCUIT_PROPOSED:root:NODES_10"
+    set_sender(ADDR_BENEFICIARY)
+    assert contract.accept_circuit() == "CIRCUIT_FROZEN:root:NODES_10"
 
 
 # =============================================================================
-# 1. Happy-Path M&A Kleene 3-Valued Predicate Circuit + Native Payout
+# 1. Happy-Path M&A Kleene K3 Circuit, Live OR Short-Circuiting & Native Payout
 # =============================================================================
-def test_ma_closing_circuit_happy_path_k3_and_native_payout():
+def test_ma_closing_circuit_happy_path_k3_short_circuit_and_native_payout():
     fx = setup_ma_fixtures()
     setup_ma_llm()
 
@@ -128,18 +132,24 @@ def test_ma_closing_circuit_happy_path_k3_and_native_payout():
     build_ma_circuit(contract, fx, escrow=1000)
     assert_conservation(contract)
 
+    status = json.loads(contract.get_circuit_status())
+    assert status["nodes_count"] == 10
+    assert status["atoms_count"] == 6
+    assert status["circuit_status"] == "FROZEN"
+
     # Evaluate K_OF_N (2 of 3): TRUE, FALSE, TRUE -> gate_reg_quorum == TRUE
     set_sender(ADDR_SOLVER)
     assert contract.evaluate_atom("atom_eu_antitrust") == "ATOM_CONCLUDED:atom_eu_antitrust:TRUE:CLAIM_VERIFIED"
     assert contract.evaluate_atom("atom_us_cfius") == "ATOM_CONCLUDED:atom_us_cfius:FALSE:CLAIM_CONTRADICTED"
     assert contract.evaluate_atom("atom_uk_cma") == "ATOM_CONCLUDED:atom_uk_cma:TRUE:CLAIM_VERIFIED"
 
-    # Evaluate OR: FALSE, TRUE -> gate_financing == TRUE
-    assert contract.evaluate_atom("atom_bank_debt") == "ATOM_CONCLUDED:atom_bank_debt:FALSE:CLAIM_CONTRADICTED"
+    # Evaluate ONLY atom_bridge_equity -> TRUE; atom_bank_debt stays UNKNOWN!
+    # Kleene K3 OR(UNKNOWN, TRUE) short-circuits directly to TRUE!
     assert contract.evaluate_atom("atom_bridge_equity") == "ATOM_CONCLUDED:atom_bridge_equity:TRUE:CLAIM_VERIFIED"
 
     # Fail-closed NOT(UNKNOWN) == UNKNOWN: settle_circuit MUST revert before atom_injunction is evaluated
     view_before = json.loads(contract.evaluate_circuit_view())
+    assert view_before["node_values"]["atom_bank_debt"] == "UNKNOWN"
     assert view_before["node_values"]["gate_reg_quorum"] == "TRUE"
     assert view_before["node_values"]["gate_financing"] == "TRUE"
     assert view_before["node_values"]["gate_no_injunction"] == "UNKNOWN"
@@ -149,8 +159,10 @@ def test_ma_closing_circuit_happy_path_k3_and_native_payout():
         contract.settle_circuit()
 
     # Now evaluate atom_injunction -> FALSE => NOT(FALSE) == TRUE => root == TRUE
+    # (even though atom_bank_debt was never evaluated and remains UNKNOWN!)
     assert contract.evaluate_atom("atom_injunction") == "ATOM_CONCLUDED:atom_injunction:FALSE:CLAIM_CONTRADICTED"
     view_after = json.loads(contract.evaluate_circuit_view())
+    assert view_after["node_values"]["atom_bank_debt"] == "UNKNOWN"
     assert view_after["node_values"]["gate_no_injunction"] == "TRUE"
     assert view_after["root_value"] == "TRUE"
 
@@ -182,10 +194,9 @@ def test_short_circuit_falsification_refunds_sponsor():
     fx = setup_ma_fixtures()
 
     def falsifying_llm(prompt: str) -> dict:
-        if "CA-2026-1192-DEL" in prompt:
-            # Suppose injunction IS active -> TRUE => NOT(TRUE) == FALSE => root AND == FALSE immediately!
+        if "2026-1192-DEL" in prompt:
             return {"verdict": "TRUE", "reason": "CLAIM_VERIFIED"}
-        return {"verdict": "UNKNOWN", "reason": "FETCH_OR_PARSE_FAILURE"}
+        return {"verdict": "UNKNOWN", "reason": "INCONCLUSIVE_EVIDENCE"}
 
     mock_llm_responses.append(falsifying_llm)
 
@@ -271,20 +282,23 @@ def test_adversarial_leader_direct_and_on_chain_rejection():
 
 
 # =============================================================================
-# 4. Verdict/Reason Compatibility Table & Kleene Gate Truth Tables
+# 4. Strict Fail-Closed Compatibility Table & Kleene Gate Truth Tables
 # =============================================================================
-def test_compatibility_table_and_kleene_truth_tables():
+def test_compatibility_table_fail_closed_and_kleene_truth_tables():
     assert is_compatible_atom_verdict_reason("TRUE", "CLAIM_VERIFIED") is True
     assert is_compatible_atom_verdict_reason("FALSE", "CLAIM_CONTRADICTED") is True
     assert is_compatible_atom_verdict_reason("UNKNOWN", "FETCH_OR_PARSE_FAILURE") is True
     assert is_compatible_atom_verdict_reason("UNKNOWN", "HASH_MISMATCH") is True
+    assert is_compatible_atom_verdict_reason("UNKNOWN", "INCONCLUSIVE_EVIDENCE") is True
 
     # Invalid cross-pairs
     for v, r in [
         ("TRUE", "CLAIM_CONTRADICTED"),
         ("TRUE", "FETCH_OR_PARSE_FAILURE"),
+        ("TRUE", "INCONCLUSIVE_EVIDENCE"),
         ("FALSE", "CLAIM_VERIFIED"),
         ("FALSE", "HASH_MISMATCH"),
+        ("FALSE", "INCONCLUSIVE_EVIDENCE"),
         ("UNKNOWN", "CLAIM_VERIFIED"),
         ("UNKNOWN", "CLAIM_CONTRADICTED"),
         ("APPROVED", "CLAIM_VERIFIED"),
@@ -292,25 +306,31 @@ def test_compatibility_table_and_kleene_truth_tables():
     ]:
         assert is_compatible_atom_verdict_reason(v, r) is False
 
-    # Deterministic coercion
+    # Strict fail-closed coercion: EVERY contradictory pair MUST become UNKNOWN
+    # (never coerce TRUE + CLAIM_CONTRADICTED into FALSE, which would flip under NOT!)
     assert enforce_atom_verdict_compatibility("TRUE", "CLAIM_VERIFIED") == ("TRUE", "CLAIM_VERIFIED")
-    assert enforce_atom_verdict_compatibility("TRUE", "CLAIM_CONTRADICTED") == ("FALSE", "CLAIM_CONTRADICTED")
+    assert enforce_atom_verdict_compatibility("FALSE", "CLAIM_CONTRADICTED") == ("FALSE", "CLAIM_CONTRADICTED")
+    assert enforce_atom_verdict_compatibility("UNKNOWN", "INCONCLUSIVE_EVIDENCE") == ("UNKNOWN", "INCONCLUSIVE_EVIDENCE")
+    assert enforce_atom_verdict_compatibility("UNKNOWN", "HASH_MISMATCH") == ("UNKNOWN", "HASH_MISMATCH")
+    assert enforce_atom_verdict_compatibility("TRUE", "CLAIM_CONTRADICTED") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
     assert enforce_atom_verdict_compatibility("TRUE", "HASH_MISMATCH") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
     assert enforce_atom_verdict_compatibility("FALSE", "CLAIM_VERIFIED") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
+    assert enforce_atom_verdict_compatibility("FALSE", "INCONCLUSIVE_EVIDENCE") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
     assert enforce_atom_verdict_compatibility("UNKNOWN", "CLAIM_VERIFIED") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
     assert enforce_atom_verdict_compatibility("HALLUCINATED", "BOGUS") == ("UNKNOWN", "FETCH_OR_PARSE_FAILURE")
 
-    # Kleene K_OF_N short-circuit truth table
+    # Kleene K_OF_N & NOT truth tables
     assert evaluate_kleene_gate("K_OF_N", ["TRUE", "TRUE", "UNKNOWN"], 2) == "TRUE"
     assert evaluate_kleene_gate("K_OF_N", ["FALSE", "FALSE", "UNKNOWN"], 2) == "FALSE"
     assert evaluate_kleene_gate("K_OF_N", ["TRUE", "FALSE", "UNKNOWN"], 2) == "UNKNOWN"
+    assert evaluate_kleene_gate("OR", ["UNKNOWN", "TRUE"], 0) == "TRUE"
     assert evaluate_kleene_gate("NOT", ["UNKNOWN"]) == "UNKNOWN"
     assert evaluate_kleene_gate("NOT", ["FALSE"]) == "TRUE"
     assert evaluate_kleene_gate("NOT", ["TRUE"]) == "FALSE"
 
 
 # =============================================================================
-# 5. Transient UNKNOWN Retry Lifecycle & Conclusive Immutability
+# 5. Transient UNKNOWN Retry Lifecycle, INCONCLUSIVE_EVIDENCE & Immutability
 # =============================================================================
 def test_transient_unknown_retry_and_conclusive_immutability():
     fx = setup_ma_fixtures()
@@ -318,7 +338,7 @@ def test_transient_unknown_retry_and_conclusive_immutability():
     contract = ClauseCircuit()
     build_ma_circuit(contract, fx, escrow=1000)
 
-    # Attempt 1: transient HTTP 503 -> UNKNOWN (retriable!)
+    # Attempt 1: transient HTTP 503 -> UNKNOWN:FETCH_OR_PARSE_FAILURE (retriable!)
     eu_url = fx["atom_eu_antitrust"]["url"]
     mock_web_responses[eu_url] = MockWebResponse(status=503, body=b"Service Unavailable")
     assert contract.evaluate_atom("atom_eu_antitrust") == "ATOM_UNKNOWN:atom_eu_antitrust:FETCH_OR_PARSE_FAILURE:ATTEMPT_1"
@@ -342,19 +362,18 @@ def test_transient_unknown_retry_and_conclusive_immutability():
     with pytest.raises(UserError, match="ATOM_ALREADY_CONCLUDED"):
         contract.evaluate_atom("atom_us_cfius")
 
-    # 5 consecutive UNKNOWN attempts cap out -> 6th raises MAX_ATOM_RETRIES_EXCEEDED
-    uk_url = fx["atom_uk_cma"]["url"]
-    mock_web_responses[uk_url] = MockWebResponse(status=503, body=b"Down")
+    # Ambiguous LLM response yields INCONCLUSIVE_EVIDENCE and caps out after 5 attempts
+    mock_llm_responses.append(lambda p: {"verdict": "UNKNOWN", "reason": "INCONCLUSIVE_EVIDENCE"})
     for i in range(1, MAX_ATOM_ATTEMPTS + 1):
-        assert contract.evaluate_atom("atom_uk_cma") == f"ATOM_UNKNOWN:atom_uk_cma:FETCH_OR_PARSE_FAILURE:ATTEMPT_{i}"
+        assert contract.evaluate_atom("atom_uk_cma") == f"ATOM_UNKNOWN:atom_uk_cma:INCONCLUSIVE_EVIDENCE:ATTEMPT_{i}"
     with pytest.raises(UserError, match="MAX_ATOM_RETRIES_EXCEEDED"):
         contract.evaluate_atom("atom_uk_cma")
 
 
 # =============================================================================
-# 6. DAG Acyclicity, Dangling Refs, Unauthorized Callers, Payable & Expiry
+# 6. DAG Acyclicity, Orphan Guard, Bilateral Consent, Unauthorized, Expiry
 # =============================================================================
-def test_dag_validation_unauthorized_payable_and_expiry():
+def test_dag_validation_bilateral_consent_unauthorized_and_expiry():
     fx = setup_ma_fixtures()
     contract = ClauseCircuit()
 
@@ -385,9 +404,9 @@ def test_dag_validation_unauthorized_payable_and_expiry():
     set_sender(ADDR_SPONSOR)
     contract.add_atom("a1", "Claim 1", fx["atom_eu_antitrust"]["url"], fx["atom_eu_antitrust"]["hash"])
 
-    # Atom-only circuit without composite gate fails freeze
+    # Atom-only circuit without composite gate fails propose_circuit
     with pytest.raises(UserError, match="NO_COMPOSITE_GATE"):
-        contract.freeze_circuit("a1")
+        contract.propose_circuit("a1")
 
     # Invalid gate arity, self-ref, duplicate child
     with pytest.raises(UserError, match="SELF_REFERENCE_NOT_ALLOWED"):
@@ -399,16 +418,41 @@ def test_dag_validation_unauthorized_payable_and_expiry():
     with pytest.raises(UserError, match="INVALID_K_OF_N_THRESHOLD"):
         contract.add_gate("g_bad_k", "K_OF_N", ["a1", "a2"], 3)
 
-    # Cycle detection at freeze_circuit: g1 -> g2 -> g1
+    # Cycle detection at propose_circuit: g1 -> g2 -> g1
     contract.add_gate("g1", "OR", ["a1", "g2"], 0)
     contract.add_gate("g2", "NOT", ["g1"], 0)
     with pytest.raises(UserError, match="CYCLE_DETECTED"):
-        contract.freeze_circuit("g1")
+        contract.propose_circuit("g1")
 
-    # Dangling child ref at freeze_circuit
+    # Orphan draft nodes rejected if g1/g2 remain when proposing valid root
+    contract.add_gate("g_valid", "NOT", ["a1"], 0)
+    with pytest.raises(UserError, match="UNREACHABLE_DRAFT_NODES"):
+        contract.propose_circuit("g_valid")
+
+    # Remove draft cyclic nodes cleanly -> zero dead nodes left in storage!
+    assert contract.remove_draft_node("g2") == "NODE_REMOVED:g2"
+    assert contract.remove_draft_node("g1") == "NODE_REMOVED:g1"
+    assert json.loads(contract.get_circuit_status())["nodes_count"] == 2
+
+    # Dangling child ref at propose_circuit
     contract.add_gate("g_dang", "NOT", ["missing_node"], 0)
     with pytest.raises(UserError, match="DANGLING_CHILD_REF"):
-        contract.freeze_circuit("g_dang")
+        contract.propose_circuit("g_dang")
+    contract.remove_draft_node("g_dang")
+
+    # Propose clean 2-node DAG
+    assert contract.propose_circuit("g_valid") == "CIRCUIT_PROPOSED:g_valid:NODES_2"
+
+    # Sponsor / attacker CANNOT accept on beneficiary's behalf
+    with pytest.raises(UserError, match="UNAUTHORIZED_CALLER"):
+        contract.accept_circuit()
+    set_sender(ADDR_ATTACKER)
+    with pytest.raises(UserError, match="UNAUTHORIZED_CALLER"):
+        contract.accept_circuit()
+
+    # Evaluation blocked before beneficiary accepts
+    with pytest.raises(UserError, match="CIRCUIT_NOT_FROZEN"):
+        contract.evaluate_atom("a1")
 
     # Premature expire_circuit blocked
     with pytest.raises(UserError, match="CIRCUIT_STILL_ACTIVE"):
@@ -445,26 +489,26 @@ def test_fail_closed_evidence_and_url_allowlist():
 
     # Unpinned URL, query params, fragments, path traversal rejected at add_atom
     for bad_url in [
-        "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/main/evidence/a.json",
-        f"{BASE_URL}/a.json?raw=1",
-        f"{BASE_URL}/a.json#top",
-        f"{BASE_URL}/../secret.json",
+        "https://raw.githubusercontent.com/Kanezar3/Clause-Circuit/main/evidence/a.txt",
+        f"{BASE_URL}/a.txt?raw=1",
+        f"{BASE_URL}/a.txt#top",
+        f"{BASE_URL}/../secret.txt",
     ]:
         assert is_valid_evidence_url(bad_url) is False
         with pytest.raises(UserError, match="INVALID_EVIDENCE_URL"):
             contract.add_atom("bad", "Claim", bad_url, "a" * 64)
 
-    url_404 = f"{BASE_URL}/missing.json"
-    url_empty = f"{BASE_URL}/empty.json"
-    url_big = f"{BASE_URL}/big.json"
+    url_404 = f"{BASE_URL}/missing.txt"
+    url_empty = f"{BASE_URL}/empty.txt"
+    url_big = f"{BASE_URL}/big.txt"
     url_utf8 = f"{BASE_URL}/bad_utf8.bin"
-    url_mismatch = f"{BASE_URL}/mismatch.json"
+    url_mismatch = f"{BASE_URL}/mismatch.txt"
 
     mock_web_responses[url_404] = MockWebResponse(status=404, body=b"Not Found")
     mock_web_responses[url_empty] = MockWebResponse(status=200, body=b"")
     mock_web_responses[url_big] = MockWebResponse(status=200, body=b"X" * (MAX_EVIDENCE_BYTES + 1))
     mock_web_responses[url_utf8] = MockWebResponse(status=200, body=b"\xff\xfe\x00\xaa")
-    mock_web_responses[url_mismatch] = MockWebResponse(status=200, body=b'{"tampered": true}')
+    mock_web_responses[url_mismatch] = MockWebResponse(status=200, body=b"Tampered text")
 
     contract.add_atom("a_404", "Claim", url_404, "0" * 64)
     contract.add_atom("a_empty", "Claim", url_empty, _sha256_hex(b""))
@@ -472,7 +516,9 @@ def test_fail_closed_evidence_and_url_allowlist():
     contract.add_atom("a_utf8", "Claim", url_utf8, _sha256_hex(b"\xff\xfe\x00\xaa"))
     contract.add_atom("a_mismatch", "Claim", url_mismatch, "f" * 64)
     contract.add_gate("root", "AND", ["a_404", "a_empty", "a_big", "a_utf8", "a_mismatch"], 0)
-    contract.freeze_circuit("root")
+    contract.propose_circuit("root")
+    set_sender(ADDR_BENEFICIARY)
+    contract.accept_circuit()
 
     assert contract.evaluate_atom("a_404") == "ATOM_UNKNOWN:a_404:FETCH_OR_PARSE_FAILURE:ATTEMPT_1"
     assert contract.evaluate_atom("a_empty") == "ATOM_UNKNOWN:a_empty:FETCH_OR_PARSE_FAILURE:ATTEMPT_1"
@@ -486,10 +532,33 @@ def test_fail_closed_evidence_and_url_allowlist():
 
 
 # =============================================================================
-# 8. Cancel Draft Circuit & Global Node/Atom Bounds
+# 8. Beneficiary Rejection, Cancel Draft Circuit & Global Node/Atom Bounds
 # =============================================================================
-def test_cancel_draft_and_global_bounds():
+def test_beneficiary_reject_cancel_draft_and_global_bounds():
     fx = setup_ma_fixtures()
+
+    # Path A: Beneficiary rejects a PROPOSED circuit -> 100% refund to Sponsor
+    c1 = ClauseCircuit()
+    set_sender(ADDR_SPONSOR)
+    set_value(250)
+    c1.open_circuit(str(ADDR_BENEFICIARY), 250, 3600)
+    set_value(0)
+    c1.add_atom("a1", "Claim 1", fx["atom_eu_antitrust"]["url"], fx["atom_eu_antitrust"]["hash"])
+    c1.add_gate("g1", "NOT", ["a1"], 0)
+    c1.propose_circuit("g1")
+
+    set_sender(ADDR_BENEFICIARY)
+    assert c1.reject_circuit() == "CIRCUIT_REJECTED:REFUND_250"
+    assert c1.get_pending_payout(str(ADDR_SPONSOR)) == 250
+    assert_conservation(c1)
+
+    set_sender(ADDR_SPONSOR)
+    assert c1.withdraw_payout() == 250
+    assert emitted_transfers == [{"to": str(ADDR_SPONSOR), "value": 250}]
+    assert_conservation(c1)
+
+    # Path B: Global bounds + sponsor cancel_draft_circuit
+    emitted_transfers.clear()
     contract = ClauseCircuit()
     set_sender(ADDR_SPONSOR)
     set_value(300)
@@ -510,7 +579,6 @@ def test_cancel_draft_and_global_bounds():
     with pytest.raises(UserError, match="MAX_NODES_EXCEEDED"):
         contract.add_gate("gt_over", "NOT", ["at_00"], 0)
 
-    # Cancel draft circuit refunds 100% to sponsor
     assert contract.cancel_draft_circuit() == "CIRCUIT_CANCELLED:REFUND_300"
     assert contract.get_pending_payout(str(ADDR_SPONSOR)) == 300
     assert_conservation(contract)
