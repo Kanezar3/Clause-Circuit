@@ -230,11 +230,13 @@ async function safeDeploy(client, code, retries = 5) {
   let txHash = null, lastErr = null;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      txHash = await client.deployContract({ code });
+      const fees = await client.estimateTransactionFees({});
+      txHash = await client.deployContract({ code, fees });
       console.log(`  -> deployContract sent: ${txHash}`);
       break;
     } catch (err) {
       lastErr = err;
+      console.warn(`  [deploy attempt ${attempt}]: ${err.message || err}`);
       if (attempt < retries) await new Promise(r => setTimeout(r, 4000 * attempt));
     }
   }
@@ -243,15 +245,27 @@ async function safeDeploy(client, code, retries = 5) {
   return { txHash, receipt };
 }
 
-async function safeWrite(client, { address, functionName, args = [], value = 0n, expectSuccess = true, retries = 5 }) {
+async function safeWrite(client, { address, functionName, args = [], value = 0n, expectSuccess = true, useWriteFeeEst = false, retries = 5 }) {
   let txHash = null, lastErr = null;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      txHash = await client.writeContract({ address, functionName, args, value });
+      let fees;
+      if (useWriteFeeEst && typeof client.estimateTransactionFeesForWrite === 'function') {
+        try {
+          fees = await client.estimateTransactionFeesForWrite({ address, functionName, args, value });
+        } catch (estErr) {
+          console.warn(`  [fee-for-write fallback]: ${estErr.message || estErr}`);
+          fees = await client.estimateTransactionFees({});
+        }
+      } else {
+        fees = await client.estimateTransactionFees({});
+      }
+      txHash = await client.writeContract({ address, functionName, args, value, fees });
       console.log(`  -> writeContract ${functionName} sent: ${txHash}`);
       break;
     } catch (err) {
       lastErr = err;
+      console.warn(`  [write ${functionName} attempt ${attempt}]: ${err.message || err}`);
       if (attempt < retries) await new Promise(r => setTimeout(r, 4000 * attempt));
     }
   }
@@ -300,19 +314,37 @@ async function main() {
     console.log(`${role.padEnd(12)}: ${accounts[role].address}`);
   }
 
-  // Fund Sponsor and Attacker for real native payable transfers
+  // Fund all 4 accounts for StudioNet v2 transaction fees + real native escrow
+  const ESCROW_WEI = 500000000000000000n; // 0.5 GEN (<= MAX_ESCROW = 10^18)
+  const MISMATCH_WEI = 250000000000000000n; // 0.25 GEN
+  const TARGET_FUNDS = {
+    sponsor: 8000000000000000000n,     // 8 GEN
+    beneficiary: 4000000000000000000n, // 4 GEN
+    solver: 4000000000000000000n,      // 4 GEN
+    attacker: 4000000000000000000n     // 4 GEN
+  };
   const fundingInfo = state.funding || {};
-  for (const role of ['sponsor', 'attacker']) {
+  for (const role of ROLES) {
     const addr = accounts[role].address;
     let balHex = await rawRpcCall('eth_getBalance', [addr, 'latest']);
     let balWei = BigInt(balHex || '0x0');
-    if (balWei < 10000n) {
-      console.log(`Funding ${role} (${addr}) with 1,000,000 wei via sim_fundAccount...`);
-      const fundTx = await rawRpcCall('sim_fundAccount', [addr, 1000000]);
-      await new Promise(r => setTimeout(r, 3000));
+    const target = TARGET_FUNDS[role];
+    if (balWei < target) {
+      const topUp = target - balWei;
+      const chunk = 4000000000000000000n;
+      let rem = topUp;
+      const txs = [];
+      while (rem > 0n) {
+        const amt = rem > chunk ? chunk : rem;
+        console.log(`Funding ${role} (${addr}) with ${amt.toString()} wei via sim_fundAccount...`);
+        const fundTx = await rawRpcCall('sim_fundAccount', [addr, Number(amt)]);
+        txs.push(fundTx);
+        rem -= amt;
+        await new Promise(r => setTimeout(r, 2000));
+      }
       balHex = await rawRpcCall('eth_getBalance', [addr, 'latest']);
       balWei = BigInt(balHex || '0x0');
-      fundingInfo[role] = { address: addr, simFundAccountTx: fundTx, fundedBalanceWei: balWei.toString() };
+      fundingInfo[role] = { address: addr, simFundAccountTxs: txs, fundedBalanceWei: balWei.toString() };
       console.log(`  -> Funded ${role}: balance=${balWei.toString()} wei`);
     } else if (!fundingInfo[role]) {
       fundingInfo[role] = { address: addr, fundedBalanceWei: balWei.toString() };
@@ -455,11 +487,11 @@ async function main() {
   const readNode = (id) => async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_node', args: [id] }));
   const readAcct = async () => JSON.parse(await readContractWithRetry(clients.solver, { address: MAIN_ADDR, functionName: 'get_accounting_summary' }));
 
-  async function runStep({ step, scenario, role, functionName, args = [], value = 0n, expectSuccess = true, expected, readBackFn = readStatus }) {
+  async function runStep({ step, scenario, role, functionName, args = [], value = 0n, expectSuccess = true, useWriteFeeEst = false, expected, readBackFn = readStatus }) {
     if (history.find(h => h.step === step)) return;
     console.log(`\n--- Step ${step}: ${scenario} ---`);
     const { txHash, receipt } = await safeWrite(clients[role], {
-      address: MAIN_ADDR, functionName, args, value, expectSuccess
+      address: MAIN_ADDR, functionName, args, value, expectSuccess, useWriteFeeEst
     });
     const retOrErr = expectSuccess ? receipt.returnReadable : (receipt.returnReadable || receipt.stderr || '');
     if (expected !== undefined) {
@@ -478,22 +510,22 @@ async function main() {
   // X1: Unauthorized open_circuit
   await runStep({
     step: 'X1', scenario: 'Unauthorized Non-Sponsor open_circuit Blocked', role: 'attacker',
-    functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 1000n,
+    functionName: 'open_circuit', args: [accounts.beneficiary.address, ESCROW_WEI, 3600], value: ESCROW_WEI,
     expectSuccess: false, expected: 'UNAUTHORIZED_CALLER', readBackFn: readStatus
   });
 
   // X2: Value mismatch on payable open_circuit
   await runStep({
     step: 'X2', scenario: 'Payable Escrow Value Mismatch Blocked', role: 'sponsor',
-    functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 500n,
+    functionName: 'open_circuit', args: [accounts.beneficiary.address, ESCROW_WEI, 3600], value: MISMATCH_WEI,
     expectSuccess: false, expected: 'ESCROW_VALUE_MISMATCH', readBackFn: readStatus
   });
 
-  // S1: Open circuit with 1000 wei real native escrow
+  // S1: Open circuit with 0.5 GEN (500,000,000,000,000,000 wei) real native escrow
   await runStep({
-    step: 'S1', scenario: 'Sponsor Opens Circuit with 1000 wei Payable Escrow', role: 'sponsor',
-    functionName: 'open_circuit', args: [accounts.beneficiary.address, 1000, 3600], value: 1000n,
-    expectSuccess: true, expected: 'CIRCUIT_OPENED:ESCROW_1000', readBackFn: readStatus
+    step: 'S1', scenario: 'Sponsor Opens Circuit with 0.5 GEN Payable Escrow', role: 'sponsor',
+    functionName: 'open_circuit', args: [accounts.beneficiary.address, ESCROW_WEI, 3600], value: ESCROW_WEI,
+    expectSuccess: true, expected: `CIRCUIT_OPENED:ESCROW_${ESCROW_WEI.toString()}`, readBackFn: readStatus
   });
 
   // X3: Unpinned /main/ URL blocked
@@ -641,9 +673,9 @@ async function main() {
 
   // S19: Permissionless Kleene K3 Settlement -> RELEASED_TO_BENEFICIARY
   await runStep({
-    step: 'S19', scenario: 'Permissionless Kleene K3 Settlement Releases 1000 wei to Beneficiary', role: 'solver',
+    step: 'S19', scenario: 'Permissionless Kleene K3 Settlement Releases 0.5 GEN to Beneficiary', role: 'solver',
     functionName: 'settle_circuit', args: [],
-    expectSuccess: true, expected: 'SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_1000', readBackFn: readAcct
+    expectSuccess: true, expected: `SETTLED:RELEASED_TO_BENEFICIARY:AMOUNT_${ESCROW_WEI.toString()}`, readBackFn: readAcct
   });
 
   // X8: Replay settlement blocked
@@ -660,22 +692,29 @@ async function main() {
     expectSuccess: false, expected: 'NO_PENDING_PAYOUT', readBackFn: readAcct
   });
 
-  // S20: Beneficiary withdraws 1000 wei real native value via _EoaRecipient.emit_transfer
+  // S20: Beneficiary withdraws 0.5 GEN real native value via _EoaRecipient.emit_transfer
   if (!history.find(h => h.step === 'S20')) {
     const balBeforeHex = await rawRpcCall('eth_getBalance', [accounts.beneficiary.address, 'latest']);
     const balBefore = BigInt(balBeforeHex || '0x0');
+    const cBalBeforeHex = await rawRpcCall('eth_getBalance', [MAIN_ADDR, 'latest']);
+    const cBalBefore = BigInt(cBalBeforeHex || '0x0');
     await runStep({
-      step: 'S20', scenario: 'Beneficiary Withdraws 1000 wei Real Native Payout via _EoaRecipient.emit_transfer', role: 'beneficiary',
+      step: 'S20', scenario: 'Beneficiary Withdraws 0.5 GEN Real Native Payout via _EoaRecipient.emit_transfer', role: 'beneficiary',
       functionName: 'withdraw_payout', args: [],
-      expectSuccess: true, expected: '1000',
+      expectSuccess: true, useWriteFeeEst: true, expected: ESCROW_WEI.toString(),
       readBackFn: async () => {
         const balAfterHex = await rawRpcCall('eth_getBalance', [accounts.beneficiary.address, 'latest']);
         const balAfter = BigInt(balAfterHex || '0x0');
+        const cBalAfterHex = await rawRpcCall('eth_getBalance', [MAIN_ADDR, 'latest']);
+        const cBalAfter = BigInt(cBalAfterHex || '0x0');
         const acct = await readAcct();
         return {
+          contract_balance_before_wei: cBalBefore.toString(),
+          contract_balance_after_wei: cBalAfter.toString(),
+          contract_balance_delta_wei: (cBalAfter - cBalBefore).toString(),
           beneficiary_eoa_balance_before_wei: balBefore.toString(),
           beneficiary_eoa_balance_after_wei: balAfter.toString(),
-          beneficiary_eoa_delta_wei: (balAfter - balBefore).toString(),
+          beneficiary_eoa_net_delta_wei: (balAfter - balBefore).toString(),
           accounting: acct
         };
       }

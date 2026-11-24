@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "genlayer-js": "^0.18.0"
+    "genlayer-js": "^2.0.0"
   }
 }
