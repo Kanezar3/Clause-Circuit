@@ -1,6 +1,6 @@
-# Portal Submission Note: Clause Circuit
+# Release Notes: Clause Circuit
 
-## Section 1: Submission Description (Strictly < 1,000 Characters)
+## Overview
 
 ```text
 ClauseCircuit is a bilateral Kleene 3-valued (K3) predicate DAG (AND/OR/NOT/K_OF_N) escrow with real native transfers on GenLayer StudioNet. Sponsor locks payable GEN and proposes an acyclic DAG (Kahn's sort, 0 orphan nodes); beneficiary accepts before activation. Parties freeze the graph up front while validators judge commit-pinned prose into TRUE/FALSE/UNKNOWN under exact 5-field canonical consensus and strict fail-closed compatibility (retriable UNKNOWN <=5; immutable TRUE/FALSE).
@@ -12,7 +12,7 @@ Caveat: audits pinned prose filings; not off-chain share transfer.
 
 ---
 
-## Section 2: Complete Evidence & Reference Links
+## Verified Deployment & Transaction References
 
 ### Core Contract & Repository Links
 - **StudioNet Explorer Contract**: https://explorer-studio.genlayer.com/address/0xBc668baE5C965080F28fDA1bAe2D1F67317E4eec
